@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   addClass,
   addTask,
@@ -24,7 +25,16 @@ import {
 const HARI_LIST = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
 export default function Jadwal() {
+  const { loading } = useAuth();
   const [activeTab, setActiveTab] = useState<"kuliah" | "tugas">("kuliah");
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>Memuat...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
@@ -76,6 +86,7 @@ export default function Jadwal() {
 // ==================== TAB 1: JADWAL KULIAH ====================
 
 function JadwalKuliahTab() {
+  const { user, loading } = useAuth();
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [showForm, setShowForm] = useState(false);
 
@@ -87,6 +98,7 @@ function JadwalKuliahTab() {
   const [dosen, setDosen] = useState("");
 
   useEffect(() => {
+    if (!user) return;
     const unsubscribe = listenToClasses(setClasses);
     return unsubscribe;
   }, []);
@@ -126,6 +138,14 @@ function JadwalKuliahTab() {
       ]);
     }
   };
+
+  if (loading) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Memuat...</Text>
+    </View>
+  );
+}
 
   return (
     <View style={{ flex: 1 }}>
@@ -261,6 +281,7 @@ function JadwalKuliahTab() {
 // ==================== TAB 2: DEADLINE TUGAS ====================
 
 function DeadlineTugasTab() {
+  const { user, loading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showForm, setShowForm] = useState(false);
 

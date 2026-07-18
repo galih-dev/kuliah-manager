@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Alert, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   listenToWellbeingSettings,
   saveWellbeingSettings,
@@ -15,6 +16,7 @@ const TIPS = [
 ];
 
 export default function Wellbeing() {
+  const { user, loading } = useAuth();
   const [settings, setSettings] = useState<WellbeingSettings>({
     jamIstirahat: "15:00",
     jamOlahraga: "17:00",
@@ -25,13 +27,14 @@ export default function Wellbeing() {
   const [tipHariIni] = useState(TIPS[Math.floor(Math.random() * TIPS.length)]);
 
   useEffect(() => {
-    const unsubscribe = listenToWellbeingSettings((data) => {
-      setSettings(data);
-      setJamIstirahatInput(data.jamIstirahat);
-      setJamOlahragaInput(data.jamOlahraga);
-    });
-    return unsubscribe;
-  }, []);
+  if (!user) return; // tunggu sampai user beneran ada
+  const unsubscribe = listenToWellbeingSettings((data) => {
+    setSettings(data);
+    setJamIstirahatInput(data.jamIstirahat);
+    setJamOlahragaInput(data.jamOlahraga);
+  });
+  return unsubscribe;
+}, [user]);
 
   const handleToggleAktif = async (value: boolean) => {
     try {
@@ -70,6 +73,14 @@ export default function Wellbeing() {
     }
   }
 };
+
+if (loading) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Memuat...</Text>
+    </View>
+  );
+}
 
   return (
     <ScrollView style={{ flex: 1, padding: 16 }}>
