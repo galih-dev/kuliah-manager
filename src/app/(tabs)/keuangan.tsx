@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   addTransaction,
   deleteTransaction,
@@ -38,6 +39,7 @@ function formatRupiah(angka: number) {
 }
 
 export default function Keuangan() {
+  const { user, loading } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budget, setBudgetState] = useState<number>(0);
   const [showBudgetForm, setShowBudgetForm] = useState(false);
@@ -51,15 +53,17 @@ export default function Keuangan() {
   const currentMonth = getCurrentYYYYMM();
 
   useEffect(() => {
+    if (!user) return;
     const unsubscribe = listenToTransactions(setTransactions);
     return unsubscribe;
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (!user) return;
     getBudget(currentMonth).then((b) => {
       if (b !== null) setBudgetState(b);
     });
-  }, []);
+  }, [user]);
 
   // Filter transaksi bulan ini saja
   const transaksiBulanIni = transactions.filter((t) =>
@@ -117,6 +121,14 @@ export default function Keuangan() {
       ]);
     }
   };
+
+if (loading) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Memuat...</Text>
+    </View>
+  );
+}
 
   return (
     <View style={{ flex: 1, padding: 16 }}>

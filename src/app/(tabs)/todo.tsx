@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   addTodo,
   deleteTodo,
@@ -15,6 +16,7 @@ import {
   Todo,
   toggleTodoDone,
 } from "../../../services/scheduleService";
+
 
 function getTodayString() {
   const today = new Date();
@@ -25,15 +27,17 @@ function getTodayString() {
 }
 
 export default function TodoScreen() {
+  const { user, loading } = useAuth;
   const [todos, setTodos] = useState<Todo[]>([]);
   const [judul, setJudul] = useState("");
   const [tipe, setTipe] = useState<"harian" | "mingguan">("harian");
   const [filter, setFilter] = useState<"semua" | "harian" | "mingguan">("semua");
 
   useEffect(() => {
+    if (!user) return;
     const unsubscribe = listenToTodos(setTodos);
     return unsubscribe;
-  }, []);
+  }, [user]);
 
   const handleAdd = async () => {
     if (!judul.trim()) {
@@ -73,6 +77,14 @@ export default function TodoScreen() {
   });
 
   const totalSelesai = todos.filter((t) => t.selesai).length;
+
+if (loading) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Memuat...</Text>
+    </View>
+  );
+}
 
   return (
     <View style={{ flex: 1, padding: 16 }}>

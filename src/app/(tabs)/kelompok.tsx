@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAuth } from "../../../contexts/AuthContext";
 import { auth } from "../../../services/firebase";
 import {
   addMemberToGroup,
@@ -24,6 +25,7 @@ import {
 } from "../../../services/groupService";
 
 export default function Kelompok() {
+  const { user, loading } = useAuth();
   const [groups, setGroups] = useState<GroupProject[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [namaProyek, setNamaProyek] = useState("");
@@ -31,9 +33,10 @@ export default function Kelompok() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     const unsubscribe = listenToMyGroups(setGroups);
     return unsubscribe;
-  }, []);
+  }, [user]);
 
   const handleCreate = async () => {
     if (!namaProyek || !deadline) {
@@ -62,6 +65,14 @@ export default function Kelompok() {
       ]);
     }
   };
+
+if (loading) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Memuat...</Text>
+    </View>
+  );
+}
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
