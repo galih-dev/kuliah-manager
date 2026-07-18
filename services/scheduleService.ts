@@ -100,3 +100,48 @@ export function listenToTasks(callback: (tasks: Task[]) => void) {
     callback(tasks);
   });
 }
+
+// ==================== TO-DO ====================
+
+export type Todo = {
+  id: string;
+  judul: string;
+  tipe: "harian" | "mingguan";
+  selesai: boolean;
+  tanggal: string; // YYYY-MM-DD, buat filter todo harian
+};
+
+function getTodosRef() {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  return collection(db, "todos", userId, "items");
+}
+
+export async function addTodo(data: Omit<Todo, "id" | "selesai">) {
+  const ref = getTodosRef();
+  await addDoc(ref, { ...data, selesai: false });
+}
+
+export async function deleteTodo(todoId: string) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await deleteDoc(doc(db, "todos", userId, "items", todoId));
+}
+
+export async function toggleTodoDone(todoId: string, selesai: boolean) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await updateDoc(doc(db, "todos", userId, "items", todoId), { selesai });
+}
+
+export function listenToTodos(callback: (todos: Todo[]) => void) {
+  const ref = getTodosRef();
+  const q = query(ref);
+  return onSnapshot(q, (snapshot) => {
+    const todos: Todo[] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<Todo, "id">),
+    }));
+    callback(todos);
+  });
+}
