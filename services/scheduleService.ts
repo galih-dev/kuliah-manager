@@ -1,11 +1,11 @@
 import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    onSnapshot,
-    query,
-    updateDoc,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  query,
+  updateDoc,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
@@ -143,5 +143,45 @@ export function listenToTodos(callback: (todos: Todo[]) => void) {
       ...(doc.data() as Omit<Todo, "id">),
     }));
     callback(todos);
+  });
+}
+
+// ==================== UJIAN ====================
+
+export type Exam = {
+  id: string;
+  matkul: string;
+  jenis: "UTS" | "UAS";
+  tanggal: string; // YYYY-MM-DD
+  ruangan: string;
+};
+
+function getExamsRef() {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  return collection(db, "exams", userId, "items");
+}
+
+export async function addExam(data: Omit<Exam, "id">) {
+  const ref = getExamsRef();
+  await addDoc(ref, data);
+}
+
+export async function deleteExam(examId: string) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await deleteDoc(doc(db, "exams", userId, "items", examId));
+}
+
+export function listenToExams(callback: (exams: Exam[]) => void) {
+  const ref = getExamsRef();
+  const q = query(ref);
+  return onSnapshot(q, (snapshot) => {
+    const exams: Exam[] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<Exam, "id">),
+    }));
+    exams.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+    callback(exams);
   });
 }
