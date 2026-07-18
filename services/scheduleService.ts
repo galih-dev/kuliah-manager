@@ -1,0 +1,102 @@
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    updateDoc,
+} from "firebase/firestore";
+import { auth, db } from "./firebase";
+
+export type ClassSchedule = {
+  id: string;
+  matkul: string;
+  hari: string;
+  jamMulai: string;
+  jamSelesai: string;
+  ruangan: string;
+  dosen: string;
+};
+
+// Ambil referensi collection sesuai user yang login
+function getClassesRef() {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  return collection(db, "schedules", userId, "classes");
+}
+
+// Tambah jadwal baru
+export async function addClass(data: Omit<ClassSchedule, "id">) {
+  const ref = getClassesRef();
+  await addDoc(ref, data);
+}
+
+// Hapus jadwal
+export async function deleteClass(classId: string) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await deleteDoc(doc(db, "schedules", userId, "classes", classId));
+}
+
+// Dengarkan perubahan data secara real-time
+export function listenToClasses(
+  callback: (classes: ClassSchedule[]) => void
+) {
+  const ref = getClassesRef();
+  const q = query(ref);
+  return onSnapshot(q, (snapshot) => {
+    const classes: ClassSchedule[] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<ClassSchedule, "id">),
+    }));
+    callback(classes);
+  });
+}
+
+// ==================== TUGAS/DEADLINE ====================
+
+export type Task = {
+  id: string;
+  judul: string;
+  matkul: string;
+  deadline: string; // format: YYYY-MM-DD
+  selesai: boolean;
+};
+
+function getTasksRef() {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  return collection(db, "tasks", userId, "items");
+}
+
+export async function addTask(data: Omit<Task, "id" | "selesai">) {
+  const ref = getTasksRef();
+  await addDoc(ref, { ...data, selesai: false });
+}
+
+export async function deleteTask(taskId: string) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await deleteDoc(doc(db, "tasks", userId, "items", taskId));
+}
+
+export async function toggleTaskDone(taskId: string, selesai: boolean) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await updateDoc(doc(db, "tasks", userId, "items", taskId), { selesai });
+}
+
+export function listenToTasks(callback: (tasks: Task[]) => void) {
+  const ref = getTasksRef();
+  const q = query(ref);
+  return onSnapshot(q, (snapshot) => {
+    const tasks: Task[] = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<Task, "id">),
+    }));
+    // Urutkan berdasarkan deadline terdekat
+    tasks.sort((a, b) => a.deadline.localeCompare(b.deadline));
+    callback(tasks);
+  });
+}
