@@ -1,5 +1,5 @@
 import { Link, router } from "expo-router";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -7,25 +7,33 @@ import { COLORS, FONT, FONT_SIZE, RADIUS, SPACING } from "../../../constants/the
 import { auth, db } from "../../../services/firebase";
 
 export default function Register() {
+  const [nama, setNama] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [konfirmasiPassword, setKonfirmasiPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Email dan password harus diisi");
+    if (!nama || !email || !password || !konfirmasiPassword) {
+      Alert.alert("Error", "Semua field wajib diisi");
       return;
     }
     if (password.length < 6) {
       Alert.alert("Error", "Password minimal 6 karakter");
       return;
     }
+    if (password !== konfirmasiPassword) {
+      Alert.alert("Error", "Konfirmasi password tidak cocok");
+      return;
+    }
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: nama });
       await setDoc(doc(db, "users", userCredential.user.uid), {
         email: userCredential.user.email,
         uid: userCredential.user.uid,
+        nama,
       });
       router.replace("/home");
     } catch (error: any) {
@@ -45,20 +53,21 @@ export default function Register() {
       </Text>
 
       <TextInput
+        placeholder="Nama Lengkap"
+        placeholderTextColor={COLORS.textMuted}
+        value={nama}
+        onChangeText={setNama}
+        style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 14, marginBottom: SPACING.md, color: COLORS.textPrimary, fontFamily: FONT.regular }}
+      />
+
+      <TextInput
         placeholder="Email"
         placeholderTextColor={COLORS.textMuted}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
-        style={{
-          backgroundColor: COLORS.surface,
-          borderRadius: RADIUS.md,
-          padding: 14,
-          marginBottom: SPACING.md,
-          color: COLORS.textPrimary,
-          fontFamily: FONT.regular,
-        }}
+        style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 14, marginBottom: SPACING.md, color: COLORS.textPrimary, fontFamily: FONT.regular }}
       />
 
       <TextInput
@@ -67,25 +76,22 @@ export default function Register() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        style={{
-          backgroundColor: COLORS.surface,
-          borderRadius: RADIUS.md,
-          padding: 14,
-          marginBottom: SPACING.xl,
-          color: COLORS.textPrimary,
-          fontFamily: FONT.regular,
-        }}
+        style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 14, marginBottom: SPACING.md, color: COLORS.textPrimary, fontFamily: FONT.regular }}
+      />
+
+      <TextInput
+        placeholder="Konfirmasi Password"
+        placeholderTextColor={COLORS.textMuted}
+        value={konfirmasiPassword}
+        onChangeText={setKonfirmasiPassword}
+        secureTextEntry
+        style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 14, marginBottom: SPACING.xl, color: COLORS.textPrimary, fontFamily: FONT.regular }}
       />
 
       <TouchableOpacity
         onPress={handleRegister}
         disabled={loading}
-        style={{
-          backgroundColor: COLORS.primary,
-          padding: 15,
-          borderRadius: RADIUS.md,
-          alignItems: "center",
-        }}
+        style={{ backgroundColor: COLORS.primary, padding: 15, borderRadius: RADIUS.md, alignItems: "center" }}
       >
         <Text style={{ color: "white", fontFamily: FONT.bold, fontSize: FONT_SIZE.base }}>
           {loading ? "Memproses..." : "Daftar"}

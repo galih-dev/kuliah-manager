@@ -83,7 +83,13 @@ export default function Login() {
         </Text>
       </TouchableOpacity>
 
-      <Link href="/register" style={{ marginTop: SPACING.lg, textAlign: "center" }}>
+      <Link href="/forgot-password" style={{ marginTop: SPACING.lg, textAlign: "center" }}>
+        <Text style={{ color: COLORS.textSecondary, fontFamily: FONT.medium, fontSize: FONT_SIZE.sm }}>
+          Lupa Password?
+        </Text>
+      </Link>
+
+      <Link href="/register" style={{ marginTop: SPACING.md, textAlign: "center" }}>
         <Text style={{ color: COLORS.primaryLight, fontFamily: FONT.medium, fontSize: FONT_SIZE.sm }}>
           Belum punya akun? Daftar
         </Text>
