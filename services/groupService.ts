@@ -1,13 +1,14 @@
 import {
-    addDoc,
-    arrayUnion,
-    collection,
-    deleteDoc,
-    doc,
-    onSnapshot,
-    query,
-    updateDoc,
-    where,
+  addDoc,
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  onSnapshot,
+  query,
+  updateDoc,
+  where
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
@@ -82,6 +83,20 @@ export async function addMemberToGroup(
     anggota: arrayUnion(memberUid),
     anggotaEmail: arrayUnion(memberEmail),
   });
+}
+
+// Cari user berdasarkan email, buat fitur invite anggota
+export async function findUserByEmail(email: string): Promise<{ uid: string; email: string } | null> {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("email", "==", email.trim().toLowerCase()));
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const userData = snapshot.docs[0].data();
+  return { uid: userData.uid, email: userData.email };
 }
 
 // ==================== SUB-TASKS ====================

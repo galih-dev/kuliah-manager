@@ -1,8 +1,9 @@
 import { Link, router } from "expo-router";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { auth } from "../../../services/firebase";
+import { auth, db } from "../../../services/firebase";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -21,8 +22,13 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.replace("/home");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        email: userCredential.user.email,
+        uid: userCredential.user.uid,
+      });
+      
+router.replace("/home");
     } catch (error: any) {
       Alert.alert("Registrasi Gagal", error.message);
     } finally {

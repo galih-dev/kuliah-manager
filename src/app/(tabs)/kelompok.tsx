@@ -17,6 +17,7 @@ import {
   createGroupProject,
   deleteGroupProject,
   deleteSubTask,
+  findUserByEmail,
   GroupProject,
   listenToMyGroups,
   listenToSubTasks,
@@ -152,8 +153,8 @@ function GroupCard({
 }) {
   const [subtasks, setSubtasks] = useState<SubTask[]>([]);
   const [showAddMember, setShowAddMember] = useState(false);
-  const [memberUid, setMemberUid] = useState("");
   const [memberEmail, setMemberEmail] = useState("");
+  const [searchingMember, setSearchingMember] = useState(false);
 
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskDesc, setTaskDesc] = useState("");
@@ -166,19 +167,39 @@ function GroupCard({
   }, [expanded]);
 
   const handleAddMember = async () => {
-    if (!memberUid || !memberEmail) {
-      Alert.alert("Error", "UID dan email anggota wajib diisi");
+  if (!memberEmail.trim()) {
+    Alert.alert("Error", "Email anggota wajib diisi");
+    return;
+  }
+
+  setSearchingMember(true);
+  try {
+    const foundUser = await findUserByEmail(memberEmail);
+
+    if (!foundUser) {
+      Alert.alert(
+        "User Tidak Ditemukan",
+        "Pastikan temanmu sudah pernah daftar/login di aplikasi ini dengan email tersebut."
+      );
+      setSearchingMember(false);
       return;
     }
-    try {
-      await addMemberToGroup(group.id, memberUid, memberEmail);
-      setMemberUid("");
-      setMemberEmail("");
-      setShowAddMember(false);
-    } catch (error: any) {
-      Alert.alert("Gagal menambah anggota", error.message);
+
+    if (group.anggota.includes(foundUser.uid)) {
+      Alert.alert("Info", "User ini sudah menjadi anggota proyek");
+      setSearchingMember(false);
+      return;
     }
-  };
+
+    await addMemberToGroup(group.id, foundUser.uid, foundUser.email);
+    setMemberEmail("");
+    setShowAddMember(false);
+  } catch (error: any) {
+    Alert.alert("Gagal menambah anggota", error.message);
+  } finally {
+    setSearchingMember(false);
+  }
+};
 
   const handleAddTask = async () => {
     if (!taskDesc) {
@@ -258,25 +279,24 @@ function GroupCard({
           {showAddMember && (
             <View style={{ backgroundColor: "#f3f4f6", padding: 10, borderRadius: 8, marginTop: 8 }}>
               <Text style={{ fontSize: 11, color: "#999", marginBottom: 6 }}>
-                Minta temanmu cek UID-nya di halaman profil (fitur akan ditambah nanti), atau lihat manual di Firebase Console.
+                Masukkan email temanmu (harus sudah pernah daftar di aplikasi ini)
               </Text>
-              <TextInput
-                placeholder="UID Firebase teman"
-                value={memberUid}
-                onChangeText={setMemberUid}
-                style={{ backgroundColor: "white", borderRadius: 6, padding: 8, marginBottom: 6, fontSize: 13 }}
-              />
               <TextInput
                 placeholder="Email teman"
                 value={memberEmail}
                 onChangeText={setMemberEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
                 style={{ backgroundColor: "white", borderRadius: 6, padding: 8, marginBottom: 6, fontSize: 13 }}
               />
               <TouchableOpacity
                 onPress={handleAddMember}
+                disabled={searchingMember}
                 style={{ backgroundColor: "#22c55e", padding: 8, borderRadius: 6, alignItems: "center" }}
               >
-                <Text style={{ color: "white", fontWeight: "bold", fontSize: 13 }}>Tambah</Text>
+                <Text style={{ color: "white", fontWeight: "bold", fontSize: 13 }}>
+                  {searchingMember ? "Mencari..." : "Tambah"}
+                </Text>
               </TouchableOpacity>
             </View>
           )}
