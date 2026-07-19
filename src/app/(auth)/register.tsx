@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { COLORS, FONT, FONT_SIZE, RADIUS, SPACING } from "../../../constants/theme";
 import { auth, db } from "../../../services/firebase";
 
 export default function Register() {
@@ -19,7 +20,6 @@ export default function Register() {
       Alert.alert("Error", "Password minimal 6 karakter");
       return;
     }
-
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -27,8 +27,7 @@ export default function Register() {
         email: userCredential.user.email,
         uid: userCredential.user.uid,
       });
-      
-router.replace("/home");
+      router.replace("/home");
     } catch (error: any) {
       Alert.alert("Registrasi Gagal", error.message);
     } finally {
@@ -37,37 +36,44 @@ router.replace("/home");
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 24 }}>
-      <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 24 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: "center", padding: SPACING.xl }}>
+      <Text style={{ fontSize: 32, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 4 }}>
         Daftar
+      </Text>
+      <Text style={{ fontSize: FONT_SIZE.base, fontFamily: FONT.regular, color: COLORS.textSecondary, marginBottom: SPACING.xxl }}>
+        Buat akun baru untuk mulai
       </Text>
 
       <TextInput
         placeholder="Email"
+        placeholderTextColor={COLORS.textMuted}
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
         style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 12,
+          backgroundColor: COLORS.surface,
+          borderRadius: RADIUS.md,
+          padding: 14,
+          marginBottom: SPACING.md,
+          color: COLORS.textPrimary,
+          fontFamily: FONT.regular,
         }}
       />
 
       <TextInput
         placeholder="Password (min. 6 karakter)"
+        placeholderTextColor={COLORS.textMuted}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         style={{
-          borderWidth: 1,
-          borderColor: "#ccc",
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 24,
+          backgroundColor: COLORS.surface,
+          borderRadius: RADIUS.md,
+          padding: 14,
+          marginBottom: SPACING.xl,
+          color: COLORS.textPrimary,
+          fontFamily: FONT.regular,
         }}
       />
 
@@ -75,19 +81,21 @@ router.replace("/home");
         onPress={handleRegister}
         disabled={loading}
         style={{
-          backgroundColor: "#3b82f6",
-          padding: 14,
-          borderRadius: 8,
+          backgroundColor: COLORS.primary,
+          padding: 15,
+          borderRadius: RADIUS.md,
           alignItems: "center",
         }}
       >
-        <Text style={{ color: "white", fontWeight: "bold" }}>
+        <Text style={{ color: "white", fontFamily: FONT.bold, fontSize: FONT_SIZE.base }}>
           {loading ? "Memproses..." : "Daftar"}
         </Text>
       </TouchableOpacity>
 
-      <Link href="/login" style={{ marginTop: 16, textAlign: "center" }}>
-        <Text style={{ color: "#3b82f6" }}>Sudah punya akun? Masuk</Text>
+      <Link href="/login" style={{ marginTop: SPACING.lg, textAlign: "center" }}>
+        <Text style={{ color: COLORS.primaryLight, fontFamily: FONT.medium, fontSize: FONT_SIZE.sm }}>
+          Sudah punya akun? Masuk
+        </Text>
       </Link>
     </View>
   );

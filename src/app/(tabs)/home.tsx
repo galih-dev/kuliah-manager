@@ -1,6 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getBudget, listenToTransactions, Transaction } from "../../../services/financeService";
 import { ClassSchedule, listenToClasses, listenToTasks, listenToTodos, Task, Todo } from "../../../services/scheduleService";
@@ -12,9 +14,7 @@ function getTodayHari() {
 
 function getCurrentYYYYMM() {
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function formatRupiah(angka: number) {
@@ -27,8 +27,7 @@ function getDaysLeft(deadline: string) {
   target.setHours(0, 0, 0, 0);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const diffTime = target.getTime() - today.getTime();
-  return Math.round(diffTime / (1000 * 60 * 60 * 24));
+  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export default function Home() {
@@ -61,58 +60,60 @@ export default function Home() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text>Memuat...</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background }}>
+        <Text style={{ color: COLORS.textSecondary, fontFamily: FONT.regular }}>Memuat...</Text>
       </View>
     );
   }
 
-  const jadwalHariIni = classes
-    .filter((c) => c.hari === todayHari)
-    .sort((a, b) => a.jamMulai.localeCompare(b.jamMulai));
-
-  const deadlineTerdekat = tasks
-    .filter((t) => !t.selesai)
-    .sort((a, b) => a.deadline.localeCompare(b.deadline))
-    .slice(0, 3);
-
+  const jadwalHariIni = classes.filter((c) => c.hari === todayHari).sort((a, b) => a.jamMulai.localeCompare(b.jamMulai));
+  const deadlineTerdekat = tasks.filter((t) => !t.selesai).sort((a, b) => a.deadline.localeCompare(b.deadline)).slice(0, 3);
   const todoBelumSelesai = todos.filter((t) => !t.selesai);
-
   const transaksiBulanIni = transactions.filter((t) => t.tanggal.startsWith(currentMonth));
   const totalTerpakai = transaksiBulanIni.reduce((sum, t) => sum + t.jumlah, 0);
   const sisaSaldo = budget - totalTerpakai;
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 4 }}>
-        Halo! 👋
+    <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }} contentContainerStyle={{ padding: SPACING.lg }}>
+      <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 2 }}>
+        Halo!
       </Text>
-      <Text style={{ color: "#666", marginBottom: 20 }}>
+      <Text style={{ fontSize: FONT_SIZE.base, fontFamily: FONT.regular, color: COLORS.textSecondary, marginBottom: SPACING.xl }}>
         Hari ini {todayHari}, semangat kuliahnya!
       </Text>
 
-      {/* Kartu Jadwal Hari Ini */}
+      <TouchableOpacity
+        onPress={() => router.push("/keuangan")}
+        activeOpacity={0.8}
+        style={{ backgroundColor: COLORS.primary, borderRadius: RADIUS.xl, padding: SPACING.xl, marginBottom: SPACING.md, ...SHADOW.card }}
+      >
+        <Text style={{ color: "#dbeafe", fontSize: FONT_SIZE.sm, fontFamily: FONT.medium, marginBottom: 4 }}>
+          Sisa Saldo Bulan Ini
+        </Text>
+        <Text style={{ color: "white", fontSize: 32, fontFamily: FONT.bold }}>
+          {formatRupiah(sisaSaldo)}
+        </Text>
+        <Text style={{ color: "#bfdbfe", fontSize: FONT_SIZE.xs, fontFamily: FONT.regular, marginTop: SPACING.sm }}>
+          dari budget {formatRupiah(budget)}
+        </Text>
+      </TouchableOpacity>
+
       <TouchableOpacity
         onPress={() => router.push("/jadwal")}
-        style={{
-          backgroundColor: "white",
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 12,
-          borderWidth: 1,
-          borderColor: "#e5e7eb",
-        }}
+        activeOpacity={0.8}
+        style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md, ...SHADOW.card }}
       >
-        <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}>
-          📅 Jadwal Hari Ini
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.sm }}>
+          <Ionicons name="calendar" size={18} color={COLORS.primary} style={{ marginRight: 8 }} />
+          <Text style={{ fontFamily: FONT.semibold, fontSize: FONT_SIZE.base, color: COLORS.textPrimary }}>Jadwal Hari Ini</Text>
+        </View>
         {jadwalHariIni.length === 0 ? (
-          <Text style={{ color: "#999" }}>Tidak ada kelas hari ini. Santuy!</Text>
+          <Text style={{ color: COLORS.textMuted, fontFamily: FONT.regular, fontSize: FONT_SIZE.sm }}>Tidak ada kelas hari ini. Santuy!</Text>
         ) : (
           jadwalHariIni.map((c) => (
-            <View key={c.id} style={{ marginBottom: 6 }}>
-              <Text style={{ fontWeight: "600" }}>{c.matkul}</Text>
-              <Text style={{ color: "#3b82f6", fontSize: 13 }}>
+            <View key={c.id} style={{ marginBottom: SPACING.sm }}>
+              <Text style={{ fontFamily: FONT.semibold, color: COLORS.textPrimary, fontSize: FONT_SIZE.sm }}>{c.matkul}</Text>
+              <Text style={{ color: COLORS.primary, fontFamily: FONT.regular, fontSize: FONT_SIZE.xs, marginTop: 2 }}>
                 {c.jamMulai} - {c.jamSelesai} {c.ruangan ? `• ${c.ruangan}` : ""}
               </Text>
             </View>
@@ -120,31 +121,25 @@ export default function Home() {
         )}
       </TouchableOpacity>
 
-      {/* Kartu Deadline Tugas */}
       <TouchableOpacity
         onPress={() => router.push("/jadwal")}
-        style={{
-          backgroundColor: "white",
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 12,
-          borderWidth: 1,
-          borderColor: "#e5e7eb",
-        }}
+        activeOpacity={0.8}
+        style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md, ...SHADOW.card }}
       >
-        <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}>
-          📝 Deadline Terdekat
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.sm }}>
+          <Ionicons name="document-text" size={18} color={COLORS.warning} style={{ marginRight: 8 }} />
+          <Text style={{ fontFamily: FONT.semibold, fontSize: FONT_SIZE.base, color: COLORS.textPrimary }}>Deadline Terdekat</Text>
+        </View>
         {deadlineTerdekat.length === 0 ? (
-          <Text style={{ color: "#999" }}>Tidak ada deadline mendatang.</Text>
+          <Text style={{ color: COLORS.textMuted, fontFamily: FONT.regular, fontSize: FONT_SIZE.sm }}>Tidak ada deadline mendatang.</Text>
         ) : (
           deadlineTerdekat.map((t) => {
             const daysLeft = getDaysLeft(t.deadline);
             const urgent = daysLeft <= 3;
             return (
-              <View key={t.id} style={{ marginBottom: 6 }}>
-                <Text style={{ fontWeight: "600" }}>{t.judul}</Text>
-                <Text style={{ color: urgent ? "#ef4444" : "#666", fontSize: 13 }}>
+              <View key={t.id} style={{ marginBottom: SPACING.sm }}>
+                <Text style={{ fontFamily: FONT.semibold, color: COLORS.textPrimary, fontSize: FONT_SIZE.sm }}>{t.judul}</Text>
+                <Text style={{ color: urgent ? COLORS.danger : COLORS.textSecondary, fontFamily: FONT.regular, fontSize: FONT_SIZE.xs, marginTop: 2 }}>
                   {t.deadline} • {daysLeft === 0 ? "Hari ini!" : daysLeft < 0 ? "Sudah lewat" : `${daysLeft} hari lagi`}
                 </Text>
               </View>
@@ -153,46 +148,25 @@ export default function Home() {
         )}
       </TouchableOpacity>
 
-      {/* Kartu Keuangan */}
-      <TouchableOpacity
-        onPress={() => router.push("/keuangan")}
-        style={{
-          backgroundColor: sisaSaldo < 0 ? "#fef2f2" : "#eff6ff",
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 12,
-          borderWidth: 1,
-          borderColor: sisaSaldo < 0 ? "#fecaca" : "#bfdbfe",
-        }}
-      >
-        <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 4 }}>
-          💰 Sisa Saldo Bulan Ini
-        </Text>
-        <Text style={{ fontSize: 22, fontWeight: "bold", color: sisaSaldo < 0 ? "#ef4444" : "#1d4ed8" }}>
-          {formatRupiah(sisaSaldo)}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Kartu To-Do */}
       <TouchableOpacity
         onPress={() => router.push("/todo")}
-        style={{
-          backgroundColor: "white",
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 20,
-          borderWidth: 1,
-          borderColor: "#e5e7eb",
-        }}
+        activeOpacity={0.8}
+        style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.md, ...SHADOW.card, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
       >
-        <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}>
-          ✅ To-Do
-        </Text>
-        <Text style={{ color: "#666" }}>
-          {todoBelumSelesai.length === 0
-            ? "Semua to-do udah beres! 🎉"
-            : `${todoBelumSelesai.length} to-do belum selesai`}
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Ionicons name="checkmark-circle" size={18} color={COLORS.success} style={{ marginRight: 8 }} />
+          <View>
+            <Text style={{ fontFamily: FONT.semibold, fontSize: FONT_SIZE.base, color: COLORS.textPrimary, marginBottom: 4 }}>To-Do</Text>
+            <Text style={{ color: COLORS.textSecondary, fontFamily: FONT.regular, fontSize: FONT_SIZE.sm }}>
+              {todoBelumSelesai.length === 0 ? "Semua to-do udah beres!" : `${todoBelumSelesai.length} to-do belum selesai`}
+            </Text>
+          </View>
+        </View>
+        {todoBelumSelesai.length > 0 && (
+          <View style={{ backgroundColor: COLORS.primaryLight + "22", borderRadius: RADIUS.full, width: 32, height: 32, justifyContent: "center", alignItems: "center" }}>
+            <Text style={{ color: COLORS.primaryLight, fontFamily: FONT.bold, fontSize: FONT_SIZE.sm }}>{todoBelumSelesai.length}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );

@@ -1,22 +1,9 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, FlatList, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
-import {
-  addTodo,
-  deleteTodo,
-  listenToTodos,
-  Todo,
-  toggleTodoDone,
-} from "../../../services/scheduleService";
-
+import { addTodo, deleteTodo, listenToTodos, Todo, toggleTodoDone } from "../../../services/scheduleService";
 
 function getTodayString() {
   const today = new Date();
@@ -27,7 +14,7 @@ function getTodayString() {
 }
 
 export default function TodoScreen() {
-  const { user, loading } = useAuth;
+  const { user, loading } = useAuth();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [judul, setJudul] = useState("");
   const [tipe, setTipe] = useState<"harian" | "mingguan">("harian");
@@ -54,9 +41,7 @@ export default function TodoScreen() {
 
   const handleDelete = (id: string) => {
     if (Platform.OS === "web") {
-      if (window.confirm("Yakin ingin menghapus to-do ini?")) {
-        deleteTodo(id);
-      }
+      if (window.confirm("Yakin ingin menghapus to-do ini?")) deleteTodo(id);
     } else {
       Alert.alert("Hapus To-Do", "Yakin ingin menghapus to-do ini?", [
         { text: "Batal", style: "cancel" },
@@ -65,158 +50,91 @@ export default function TodoScreen() {
     }
   };
 
-  const filteredTodos = todos.filter((t) => {
-    if (filter === "semua") return true;
-    return t.tipe === filter;
-  });
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background }}>
+        <Text style={{ color: COLORS.textSecondary, fontFamily: FONT.regular }}>Memuat...</Text>
+      </View>
+    );
+  }
 
-  // Urutkan: yang belum selesai duluan
+  const filteredTodos = todos.filter((t) => filter === "semua" || t.tipe === filter);
   const sortedTodos = [...filteredTodos].sort((a, b) => {
     if (a.selesai === b.selesai) return 0;
     return a.selesai ? 1 : -1;
   });
-
   const totalSelesai = todos.filter((t) => t.selesai).length;
 
-if (loading) {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Memuat...</Text>
-    </View>
-  );
-}
-
-  return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 4 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}>
+      <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 2 }}>
         To-Do List
       </Text>
-      <Text style={{ color: "#666", marginBottom: 16 }}>
+      <Text style={{ color: COLORS.textSecondary, marginBottom: SPACING.lg, fontSize: FONT_SIZE.sm, fontFamily: FONT.regular }}>
         {totalSelesai} dari {todos.length} selesai
       </Text>
 
-      {/* Form Tambah */}
-      <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: SPACING.md }}>
         <TextInput
           placeholder="Tambah to-do baru..."
+          placeholderTextColor={COLORS.textMuted}
           value={judul}
           onChangeText={setJudul}
           onSubmitEditing={handleAdd}
-          style={{
-            flex: 1,
-            backgroundColor: "#f3f4f6",
-            borderRadius: 8,
-            padding: 12,
-          }}
+          style={{ flex: 1, backgroundColor: COLORS.surface, borderRadius: RADIUS.sm, padding: 12, color: COLORS.textPrimary, fontFamily: FONT.regular }}
         />
-        <TouchableOpacity
-          onPress={handleAdd}
-          style={{
-            backgroundColor: "#3b82f6",
-            paddingHorizontal: 16,
-            borderRadius: 8,
-            justifyContent: "center",
-          }}
-        >
-          <Text style={{ color: "white", fontWeight: "bold" }}>+</Text>
+        <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.primary, paddingHorizontal: 18, borderRadius: RADIUS.sm, justifyContent: "center", alignItems: "center" }}>
+          <Ionicons name="add" size={22} color="white" />
         </TouchableOpacity>
       </View>
 
-      {/* Pilih tipe: harian/mingguan */}
-      <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: SPACING.lg }}>
         {(["harian", "mingguan"] as const).map((t) => (
           <TouchableOpacity
             key={t}
             onPress={() => setTipe(t)}
-            style={{
-              paddingVertical: 6,
-              paddingHorizontal: 14,
-              borderRadius: 20,
-              backgroundColor: tipe === t ? "#3b82f6" : "#f3f4f6",
-            }}
+            style={{ paddingVertical: 6, paddingHorizontal: 14, borderRadius: RADIUS.full, backgroundColor: tipe === t ? COLORS.primary : COLORS.surface }}
           >
-            <Text style={{ color: tipe === t ? "white" : "#666", fontSize: 12 }}>
+            <Text style={{ color: tipe === t ? "white" : COLORS.textMuted, fontSize: 12, fontFamily: FONT.semibold }}>
               {t === "harian" ? "Harian" : "Mingguan"}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Filter Tampilan */}
-      <View
-        style={{
-          flexDirection: "row",
-          backgroundColor: "#f3f4f6",
-          borderRadius: 10,
-          padding: 4,
-          marginBottom: 16,
-        }}
-      >
+      <View style={{ flexDirection: "row", backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 4, marginBottom: SPACING.lg }}>
         {(["semua", "harian", "mingguan"] as const).map((f) => (
           <TouchableOpacity
             key={f}
             onPress={() => setFilter(f)}
-            style={{
-              flex: 1,
-              paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor: filter === f ? "white" : "transparent",
-              alignItems: "center",
-            }}
+            style={{ flex: 1, paddingVertical: 8, borderRadius: RADIUS.sm, backgroundColor: filter === f ? COLORS.primary : "transparent", alignItems: "center" }}
           >
-            <Text style={{ fontWeight: "600", fontSize: 13 }}>
+            <Text style={{ fontFamily: FONT.semibold, fontSize: 12, color: filter === f ? "white" : COLORS.textMuted }}>
               {f === "semua" ? "Semua" : f === "harian" ? "Harian" : "Mingguan"}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* List To-Do */}
       <FlatList
         data={sortedTodos}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <Text style={{ textAlign: "center", color: "#999", marginTop: 40 }}>
-            Belum ada to-do. Tambahkan yang pertama!
-          </Text>
-        }
+        ListEmptyComponent={<Text style={{ textAlign: "center", color: COLORS.textMuted, marginTop: 40, fontFamily: FONT.regular }}>Belum ada to-do. Tambahkan yang pertama!</Text>}
         renderItem={({ item }) => (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "white",
-              borderRadius: 10,
-              padding: 12,
-              marginBottom: 8,
-              borderWidth: 1,
-              borderColor: "#e5e7eb",
-              opacity: item.selesai ? 0.5 : 1,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => toggleTodoDone(item.id, !item.selesai)}
-              style={{ flex: 1, flexDirection: "row", alignItems: "center" }}
-            >
-              <Text style={{ fontSize: 18, marginRight: 10 }}>
-                {item.selesai ? "✅" : "⬜"}
-              </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 14, marginBottom: SPACING.sm, opacity: item.selesai ? 0.5 : 1, ...SHADOW.card }}>
+            <TouchableOpacity onPress={() => toggleTodoDone(item.id, !item.selesai)} style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
+              <Ionicons name={item.selesai ? "checkmark-circle" : "ellipse-outline"} size={22} color={item.selesai ? COLORS.success : COLORS.textMuted} style={{ marginRight: 12 }} />
               <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 15,
-                    textDecorationLine: item.selesai ? "line-through" : "none",
-                  }}
-                >
+                <Text style={{ fontSize: FONT_SIZE.sm, color: COLORS.textPrimary, fontFamily: FONT.medium, textDecorationLine: item.selesai ? "line-through" : "none" }}>
                   {item.judul}
                 </Text>
-                <Text style={{ fontSize: 11, color: "#999", marginTop: 2 }}>
+                <Text style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 2, fontFamily: FONT.regular }}>
                   {item.tipe === "harian" ? "Harian" : "Mingguan"}
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleDelete(item.id)}>
-              <Text style={{ color: "#ef4444", fontWeight: "bold" }}>Hapus</Text>
+              <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
             </TouchableOpacity>
           </View>
         )}

@@ -1,17 +1,10 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Platform,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, FlatList, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
-  addTransaction,
-  deleteTransaction,
+  addTransaction, deleteTransaction,
   getBudget,
   KATEGORI_LIST,
   listenToTransactions,
@@ -21,9 +14,7 @@ import {
 
 function getCurrentYYYYMM() {
   const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function getTodayString() {
@@ -38,13 +29,22 @@ function formatRupiah(angka: number) {
   return "Rp" + angka.toLocaleString("id-ID");
 }
 
+const inputStyle = {
+  backgroundColor: COLORS.surfaceLight,
+  borderRadius: RADIUS.sm,
+  padding: 12,
+  marginBottom: SPACING.sm,
+  color: COLORS.textPrimary,
+  fontSize: FONT_SIZE.sm,
+  fontFamily: FONT.regular,
+};
+
 export default function Keuangan() {
   const { user, loading } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [budget, setBudgetState] = useState<number>(0);
   const [showBudgetForm, setShowBudgetForm] = useState(false);
   const [budgetInput, setBudgetInput] = useState("");
-
   const [jumlah, setJumlah] = useState("");
   const [kategori, setKategori] = useState(KATEGORI_LIST[0]);
   const [catatan, setCatatan] = useState("");
@@ -65,10 +65,15 @@ export default function Keuangan() {
     });
   }, [user]);
 
-  // Filter transaksi bulan ini saja
-  const transaksiBulanIni = transactions.filter((t) =>
-    t.tanggal.startsWith(currentMonth)
-  );
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background }}>
+        <Text style={{ color: COLORS.textSecondary, fontFamily: FONT.regular }}>Memuat...</Text>
+      </View>
+    );
+  }
+
+  const transaksiBulanIni = transactions.filter((t) => t.tanggal.startsWith(currentMonth));
   const totalTerpakai = transaksiBulanIni.reduce((sum, t) => sum + t.jumlah, 0);
   const sisaSaldo = budget - totalTerpakai;
 
@@ -95,12 +100,7 @@ export default function Keuangan() {
       return;
     }
     try {
-      await addTransaction({
-        jumlah: angka,
-        kategori,
-        tanggal: getTodayString(),
-        catatan,
-      });
+      await addTransaction({ jumlah: angka, kategori, tanggal: getTodayString(), catatan });
       setJumlah("");
       setCatatan("");
       setShowForm(false);
@@ -111,9 +111,7 @@ export default function Keuangan() {
 
   const handleDelete = (id: string) => {
     if (Platform.OS === "web") {
-      if (window.confirm("Yakin ingin menghapus transaksi ini?")) {
-        deleteTransaction(id);
-      }
+      if (window.confirm("Yakin ingin menghapus transaksi ini?")) deleteTransaction(id);
     } else {
       Alert.alert("Hapus Transaksi", "Yakin ingin menghapus transaksi ini?", [
         { text: "Batal", style: "cancel" },
@@ -122,211 +120,86 @@ export default function Keuangan() {
     }
   };
 
-if (loading) {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Memuat...</Text>
-    </View>
-  );
-}
-
-  return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}>
+      <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: SPACING.lg }}>
         Keuangan
       </Text>
 
-      {/* Kartu Ringkasan Budget */}
-      <View
-        style={{
-          backgroundColor: sisaSaldo < 0 ? "#fef2f2" : "#eff6ff",
-          borderRadius: 16,
-          padding: 20,
-          marginBottom: 16,
-          borderWidth: 1,
-          borderColor: sisaSaldo < 0 ? "#fecaca" : "#bfdbfe",
-        }}
-      >
-        <Text style={{ color: "#666", fontSize: 13 }}>Sisa Saldo Bulan Ini</Text>
-        <Text
-          style={{
-            fontSize: 28,
-            fontWeight: "bold",
-            color: sisaSaldo < 0 ? "#ef4444" : "#1d4ed8",
-            marginTop: 4,
-          }}
-        >
-          {formatRupiah(sisaSaldo)}
-        </Text>
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 12 }}>
-          <Text style={{ color: "#666", fontSize: 13 }}>
-            Budget: {formatRupiah(budget)}
-          </Text>
-          <Text style={{ color: "#666", fontSize: 13 }}>
-            Terpakai: {formatRupiah(totalTerpakai)}
-          </Text>
+      <View style={{ backgroundColor: sisaSaldo < 0 ? COLORS.danger : COLORS.primary, borderRadius: RADIUS.xl, padding: SPACING.xl, marginBottom: SPACING.lg, ...SHADOW.glow }}>
+        <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: FONT_SIZE.sm, fontFamily: FONT.medium }}>Sisa Saldo Bulan Ini</Text>
+        <Text style={{ fontSize: 32, fontFamily: FONT.bold, color: "white", marginTop: 4 }}>{formatRupiah(sisaSaldo)}</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: SPACING.md }}>
+          <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: FONT_SIZE.xs, fontFamily: FONT.regular }}>Budget: {formatRupiah(budget)}</Text>
+          <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: FONT_SIZE.xs, fontFamily: FONT.regular }}>Terpakai: {formatRupiah(totalTerpakai)}</Text>
         </View>
 
-        <TouchableOpacity
-          onPress={() => setShowBudgetForm(!showBudgetForm)}
-          style={{ marginTop: 12 }}
-        >
-          <Text style={{ color: "#3b82f6", fontWeight: "600", fontSize: 13 }}>
+        <TouchableOpacity onPress={() => setShowBudgetForm(!showBudgetForm)} style={{ marginTop: SPACING.md }}>
+          <Text style={{ color: "white", fontFamily: FONT.semibold, fontSize: FONT_SIZE.xs, textDecorationLine: "underline" }}>
             {showBudgetForm ? "Batal" : budget > 0 ? "Ubah Budget" : "Set Budget Bulan Ini"}
           </Text>
         </TouchableOpacity>
 
         {showBudgetForm && (
-          <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+          <View style={{ flexDirection: "row", gap: 8, marginTop: SPACING.md }}>
             <TextInput
-              placeholder="Jumlah budget (contoh: 1000000)"
+              placeholder="Jumlah budget"
+              placeholderTextColor="rgba(255,255,255,0.6)"
               value={budgetInput}
               onChangeText={setBudgetInput}
               keyboardType="numeric"
-              style={{
-                flex: 1,
-                backgroundColor: "white",
-                borderRadius: 8,
-                padding: 10,
-              }}
+              style={{ flex: 1, backgroundColor: "rgba(255,255,255,0.15)", borderRadius: RADIUS.sm, padding: 10, color: "white", fontFamily: FONT.regular }}
             />
-            <TouchableOpacity
-              onPress={handleSaveBudget}
-              style={{
-                backgroundColor: "#22c55e",
-                paddingHorizontal: 16,
-                borderRadius: 8,
-                justifyContent: "center",
-              }}
-            >
-              <Text style={{ color: "white", fontWeight: "bold" }}>Simpan</Text>
+            <TouchableOpacity onPress={handleSaveBudget} style={{ backgroundColor: "white", paddingHorizontal: 16, borderRadius: RADIUS.sm, justifyContent: "center" }}>
+              <Text style={{ color: COLORS.primary, fontFamily: FONT.semibold }}>Simpan</Text>
             </TouchableOpacity>
           </View>
         )}
       </View>
 
-      {/* Tombol Tambah Transaksi */}
       <TouchableOpacity
         onPress={() => setShowForm(!showForm)}
-        style={{
-          backgroundColor: "#3b82f6",
-          paddingVertical: 10,
-          borderRadius: 8,
-          alignItems: "center",
-          marginBottom: 12,
-        }}
+        style={{ backgroundColor: COLORS.surface, paddingVertical: 12, borderRadius: RADIUS.md, alignItems: "center", marginBottom: SPACING.md, ...SHADOW.card, flexDirection: "row", justifyContent: "center", gap: 6 }}
       >
-        <Text style={{ color: "white", fontWeight: "bold" }}>
-          {showForm ? "Tutup Form" : "+ Catat Pengeluaran"}
-        </Text>
+        <Ionicons name={showForm ? "close" : "add"} size={18} color={COLORS.primary} />
+        <Text style={{ color: COLORS.primary, fontFamily: FONT.semibold }}>{showForm ? "Tutup Form" : "Catat Pengeluaran"}</Text>
       </TouchableOpacity>
 
       {showForm && (
-        <View
-          style={{
-            backgroundColor: "#f3f4f6",
-            padding: 16,
-            borderRadius: 12,
-            marginBottom: 16,
-          }}
-        >
-          <TextInput
-            placeholder="Jumlah (contoh: 15000)"
-            value={jumlah}
-            onChangeText={setJumlah}
-            keyboardType="numeric"
-            style={{
-              backgroundColor: "white",
-              borderRadius: 8,
-              padding: 10,
-              marginBottom: 8,
-            }}
-          />
-
-          <Text style={{ marginBottom: 4, fontWeight: "600" }}>Kategori</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
+        <View style={{ backgroundColor: COLORS.surface, padding: SPACING.lg, borderRadius: RADIUS.lg, marginBottom: SPACING.lg }}>
+          <TextInput placeholder="Jumlah (contoh: 15000)" placeholderTextColor={COLORS.textMuted} value={jumlah} onChangeText={setJumlah} keyboardType="numeric" style={inputStyle} />
+          <Text style={{ color: COLORS.textSecondary, marginBottom: 6, fontFamily: FONT.semibold, fontSize: FONT_SIZE.sm }}>Kategori</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: SPACING.sm }}>
             {KATEGORI_LIST.map((k) => (
-              <TouchableOpacity
-                key={k}
-                onPress={() => setKategori(k)}
-                style={{
-                  backgroundColor: kategori === k ? "#3b82f6" : "white",
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderRadius: 20,
-                  marginRight: 6,
-                  marginBottom: 6,
-                }}
-              >
-                <Text style={{ color: kategori === k ? "white" : "black" }}>{k}</Text>
+              <TouchableOpacity key={k} onPress={() => setKategori(k)} style={{ backgroundColor: kategori === k ? COLORS.primary : COLORS.surfaceLight, paddingVertical: 6, paddingHorizontal: 12, borderRadius: RADIUS.full, marginRight: 6, marginBottom: 6 }}>
+                <Text style={{ color: kategori === k ? "white" : COLORS.textSecondary, fontSize: FONT_SIZE.xs, fontFamily: FONT.medium }}>{k}</Text>
               </TouchableOpacity>
             ))}
           </View>
-
-          <TextInput
-            placeholder="Catatan (opsional)"
-            value={catatan}
-            onChangeText={setCatatan}
-            style={{
-              backgroundColor: "white",
-              borderRadius: 8,
-              padding: 10,
-              marginBottom: 12,
-            }}
-          />
-
-          <TouchableOpacity
-            onPress={handleAddTransaction}
-            style={{
-              backgroundColor: "#22c55e",
-              padding: 12,
-              borderRadius: 8,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "white", fontWeight: "bold" }}>Simpan</Text>
+          <TextInput placeholder="Catatan (opsional)" placeholderTextColor={COLORS.textMuted} value={catatan} onChangeText={setCatatan} style={inputStyle} />
+          <TouchableOpacity onPress={handleAddTransaction} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
+            <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* List Transaksi */}
-      <Text style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}>
+      <Text style={{ fontFamily: FONT.bold, fontSize: FONT_SIZE.base, color: COLORS.textPrimary, marginBottom: SPACING.sm }}>
         Riwayat Transaksi
       </Text>
       <FlatList
         data={transaksiBulanIni}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <Text style={{ textAlign: "center", color: "#999", marginTop: 20 }}>
-            Belum ada transaksi bulan ini.
-          </Text>
-        }
+        ListEmptyComponent={<Text style={{ textAlign: "center", color: COLORS.textMuted, marginTop: 20, fontFamily: FONT.regular }}>Belum ada transaksi bulan ini.</Text>}
         renderItem={({ item }) => (
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: "white",
-              borderRadius: 10,
-              padding: 12,
-              marginBottom: 8,
-              borderWidth: 1,
-              borderColor: "#e5e7eb",
-            }}
-          >
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: COLORS.surface, borderRadius: RADIUS.md, padding: 14, marginBottom: SPACING.sm, ...SHADOW.card }}>
             <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: "600" }}>{item.kategori}</Text>
-              {item.catatan ? (
-                <Text style={{ color: "#999", fontSize: 12 }}>{item.catatan}</Text>
-              ) : null}
-              <Text style={{ color: "#999", fontSize: 12 }}>{item.tanggal}</Text>
+              <Text style={{ fontFamily: FONT.semibold, color: COLORS.textPrimary, fontSize: FONT_SIZE.sm }}>{item.kategori}</Text>
+              {item.catatan ? <Text style={{ color: COLORS.textMuted, fontSize: 11, fontFamily: FONT.regular }}>{item.catatan}</Text> : null}
+              <Text style={{ color: COLORS.textMuted, fontSize: 11, fontFamily: FONT.regular }}>{item.tanggal}</Text>
             </View>
-            <Text style={{ color: "#ef4444", fontWeight: "bold", marginRight: 12 }}>
-              -{formatRupiah(item.jumlah)}
-            </Text>
+            <Text style={{ color: COLORS.danger, fontFamily: FONT.bold, marginRight: 12, fontSize: FONT_SIZE.sm }}>-{formatRupiah(item.jumlah)}</Text>
             <TouchableOpacity onPress={() => handleDelete(item.id)}>
-              <Text style={{ color: "#ef4444" }}>Hapus</Text>
+              <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
             </TouchableOpacity>
           </View>
         )}

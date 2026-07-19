@@ -1,14 +1,7 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  FlatList,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, FlatList, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import { auth } from "../../../services/firebase";
 import {
@@ -25,6 +18,16 @@ import {
   updateSubTaskStatus,
 } from "../../../services/groupService";
 
+const inputStyle = {
+  backgroundColor: COLORS.surfaceLight,
+  borderRadius: RADIUS.sm,
+  padding: 10,
+  marginBottom: 6,
+  fontSize: 13,
+  color: COLORS.textPrimary,
+  fontFamily: FONT.regular,
+};
+
 export default function Kelompok() {
   const { user, loading } = useAuth();
   const [groups, setGroups] = useState<GroupProject[]>([]);
@@ -38,6 +41,14 @@ export default function Kelompok() {
     const unsubscribe = listenToMyGroups(setGroups);
     return unsubscribe;
   }, [user]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background }}>
+        <Text style={{ color: COLORS.textSecondary, fontFamily: FONT.regular }}>Memuat...</Text>
+      </View>
+    );
+  }
 
   const handleCreate = async () => {
     if (!namaProyek || !deadline) {
@@ -56,9 +67,7 @@ export default function Kelompok() {
 
   const handleDeleteGroup = (id: string) => {
     if (Platform.OS === "web") {
-      if (window.confirm("Yakin ingin menghapus proyek ini? Semua sub-tugas juga akan hilang.")) {
-        deleteGroupProject(id);
-      }
+      if (window.confirm("Yakin ingin menghapus proyek ini? Semua sub-tugas juga akan hilang.")) deleteGroupProject(id);
     } else {
       Alert.alert("Hapus Proyek", "Yakin ingin menghapus proyek ini?", [
         { text: "Batal", style: "cancel" },
@@ -67,54 +76,26 @@ export default function Kelompok() {
     }
   };
 
-if (loading) {
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Memuat...</Text>
-    </View>
-  );
-}
-
-  return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16 }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}>
+      <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: SPACING.lg }}>
         Tugas Kelompok
       </Text>
 
       <TouchableOpacity
         onPress={() => setShowForm(!showForm)}
-        style={{
-          backgroundColor: "#3b82f6",
-          paddingVertical: 10,
-          borderRadius: 8,
-          alignItems: "center",
-          marginBottom: 12,
-        }}
+        style={{ backgroundColor: COLORS.primary, paddingVertical: 12, borderRadius: RADIUS.md, alignItems: "center", marginBottom: SPACING.md, flexDirection: "row", justifyContent: "center", gap: 6 }}
       >
-        <Text style={{ color: "white", fontWeight: "bold" }}>
-          {showForm ? "Tutup Form" : "+ Buat Proyek Baru"}
-        </Text>
+        <Ionicons name={showForm ? "close" : "add"} size={18} color="white" />
+        <Text style={{ color: "white", fontFamily: FONT.semibold }}>{showForm ? "Tutup Form" : "Buat Proyek Baru"}</Text>
       </TouchableOpacity>
 
       {showForm && (
-        <View style={{ backgroundColor: "#f3f4f6", padding: 16, borderRadius: 12, marginBottom: 16 }}>
-          <TextInput
-            placeholder="Nama Proyek (contoh: Tugas Besar Basis Data)"
-            value={namaProyek}
-            onChangeText={setNamaProyek}
-            style={{ backgroundColor: "white", borderRadius: 8, padding: 10, marginBottom: 8 }}
-          />
-          <TextInput
-            placeholder="Deadline Internal (YYYY-MM-DD)"
-            value={deadline}
-            onChangeText={setDeadline}
-            style={{ backgroundColor: "white", borderRadius: 8, padding: 10, marginBottom: 12 }}
-          />
-          <TouchableOpacity
-            onPress={handleCreate}
-            style={{ backgroundColor: "#22c55e", padding: 12, borderRadius: 8, alignItems: "center" }}
-          >
-            <Text style={{ color: "white", fontWeight: "bold" }}>Buat Proyek</Text>
+        <View style={{ backgroundColor: COLORS.surface, padding: SPACING.lg, borderRadius: RADIUS.lg, marginBottom: SPACING.lg }}>
+          <TextInput placeholder="Nama Proyek" placeholderTextColor={COLORS.textMuted} value={namaProyek} onChangeText={setNamaProyek} style={inputStyle} />
+          <TextInput placeholder="Deadline Internal (YYYY-MM-DD)" placeholderTextColor={COLORS.textMuted} value={deadline} onChangeText={setDeadline} style={inputStyle} />
+          <TouchableOpacity onPress={handleCreate} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center", marginTop: 4 }}>
+            <Text style={{ color: "white", fontFamily: FONT.semibold }}>Buat Proyek</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -122,11 +103,7 @@ if (loading) {
       <FlatList
         data={groups}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <Text style={{ textAlign: "center", color: "#999", marginTop: 40 }}>
-            Belum ada proyek kelompok. Buat yang pertama!
-          </Text>
-        }
+        ListEmptyComponent={<Text style={{ textAlign: "center", color: COLORS.textMuted, marginTop: 40, fontFamily: FONT.regular }}>Belum ada proyek kelompok. Buat yang pertama!</Text>}
         renderItem={({ item }) => (
           <GroupCard
             group={item}
@@ -140,25 +117,14 @@ if (loading) {
   );
 }
 
-function GroupCard({
-  group,
-  expanded,
-  onToggle,
-  onDelete,
-}: {
-  group: GroupProject;
-  expanded: boolean;
-  onToggle: () => void;
-  onDelete: () => void;
-}) {
+function GroupCard({ group, expanded, onToggle, onDelete }: { group: GroupProject; expanded: boolean; onToggle: () => void; onDelete: () => void }) {
   const [subtasks, setSubtasks] = useState<SubTask[]>([]);
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberEmail, setMemberEmail] = useState("");
   const [searchingMember, setSearchingMember] = useState(false);
-
   const [showAddTask, setShowAddTask] = useState(false);
   const [taskDesc, setTaskDesc] = useState("");
-  const [taskAssignTo, setTaskAssignTo] = useState(0); // index anggota
+  const [taskAssignTo, setTaskAssignTo] = useState(0);
 
   useEffect(() => {
     if (!expanded) return;
@@ -167,39 +133,32 @@ function GroupCard({
   }, [expanded]);
 
   const handleAddMember = async () => {
-  if (!memberEmail.trim()) {
-    Alert.alert("Error", "Email anggota wajib diisi");
-    return;
-  }
-
-  setSearchingMember(true);
-  try {
-    const foundUser = await findUserByEmail(memberEmail);
-
-    if (!foundUser) {
-      Alert.alert(
-        "User Tidak Ditemukan",
-        "Pastikan temanmu sudah pernah daftar/login di aplikasi ini dengan email tersebut."
-      );
-      setSearchingMember(false);
+    if (!memberEmail.trim()) {
+      Alert.alert("Error", "Email anggota wajib diisi");
       return;
     }
-
-    if (group.anggota.includes(foundUser.uid)) {
-      Alert.alert("Info", "User ini sudah menjadi anggota proyek");
+    setSearchingMember(true);
+    try {
+      const foundUser = await findUserByEmail(memberEmail);
+      if (!foundUser) {
+        Alert.alert("User Tidak Ditemukan", "Pastikan temanmu sudah pernah daftar/login di aplikasi ini.");
+        setSearchingMember(false);
+        return;
+      }
+      if (group.anggota.includes(foundUser.uid)) {
+        Alert.alert("Info", "User ini sudah menjadi anggota proyek");
+        setSearchingMember(false);
+        return;
+      }
+      await addMemberToGroup(group.id, foundUser.uid, foundUser.email);
+      setMemberEmail("");
+      setShowAddMember(false);
+    } catch (error: any) {
+      Alert.alert("Gagal menambah anggota", error.message);
+    } finally {
       setSearchingMember(false);
-      return;
     }
-
-    await addMemberToGroup(group.id, foundUser.uid, foundUser.email);
-    setMemberEmail("");
-    setShowAddMember(false);
-  } catch (error: any) {
-    Alert.alert("Gagal menambah anggota", error.message);
-  } finally {
-    setSearchingMember(false);
-  }
-};
+  };
 
   const handleAddTask = async () => {
     if (!taskDesc) {
@@ -225,152 +184,102 @@ function GroupCard({
     return "belum";
   };
 
-  const statusColor = { belum: "#999", proses: "#f59e0b", selesai: "#22c55e" };
+  const statusColor = { belum: COLORS.textMuted, proses: COLORS.warning, selesai: COLORS.success };
   const statusLabel = { belum: "Belum Mulai", proses: "Sedang Dikerjakan", selesai: "Selesai" };
-
   const myUid = auth.currentUser?.uid;
 
   return (
-    <View
-      style={{
-        backgroundColor: "white",
-        borderRadius: 12,
-        padding: 14,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
-      }}
-    >
+    <View style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.lg, padding: SPACING.lg, marginBottom: SPACING.sm, ...SHADOW.card }}>
       <TouchableOpacity onPress={onToggle}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontWeight: "bold", fontSize: 16 }}>{group.namaProyek}</Text>
-            <Text style={{ color: "#3b82f6", marginTop: 2 }}>
-              Deadline: {group.deadlineInternal}
-            </Text>
-            <Text style={{ color: "#666", fontSize: 12, marginTop: 2 }}>
-              {group.anggota.length} anggota
-            </Text>
+            <Text style={{ fontFamily: FONT.bold, fontSize: FONT_SIZE.base, color: COLORS.textPrimary }}>{group.namaProyek}</Text>
+            <Text style={{ color: COLORS.primary, marginTop: 4, fontSize: FONT_SIZE.xs, fontFamily: FONT.semibold }}>Deadline: {group.deadlineInternal}</Text>
+            <Text style={{ color: COLORS.textMuted, fontSize: 11, marginTop: 2, fontFamily: FONT.regular }}>{group.anggota.length} anggota</Text>
           </View>
           {group.pembuatId === myUid && (
             <TouchableOpacity onPress={onDelete}>
-              <Text style={{ color: "#ef4444", fontWeight: "bold" }}>Hapus</Text>
+              <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
             </TouchableOpacity>
           )}
         </View>
       </TouchableOpacity>
 
       {expanded && (
-        <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 12 }}>
-          {/* Daftar Anggota */}
-          <Text style={{ fontWeight: "600", marginBottom: 4 }}>Anggota:</Text>
+        <View style={{ marginTop: SPACING.md, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: SPACING.md }}>
+          <Text style={{ fontFamily: FONT.semibold, marginBottom: 4, color: COLORS.textPrimary, fontSize: FONT_SIZE.sm }}>Anggota:</Text>
           {group.anggotaEmail.map((email, idx) => (
-            <Text key={idx} style={{ color: "#666", fontSize: 13 }}>
-              • {email}
-            </Text>
+            <Text key={idx} style={{ color: COLORS.textSecondary, fontSize: 13, fontFamily: FONT.regular }}>• {email}</Text>
           ))}
 
-          <TouchableOpacity onPress={() => setShowAddMember(!showAddMember)} style={{ marginTop: 8 }}>
-            <Text style={{ color: "#3b82f6", fontSize: 13, fontWeight: "600" }}>
-              {showAddMember ? "Batal" : "+ Tambah Anggota"}
-            </Text>
+          <TouchableOpacity onPress={() => setShowAddMember(!showAddMember)} style={{ marginTop: SPACING.sm }}>
+            <Text style={{ color: COLORS.primaryLight, fontSize: 13, fontFamily: FONT.semibold }}>{showAddMember ? "Batal" : "+ Tambah Anggota"}</Text>
           </TouchableOpacity>
 
           {showAddMember && (
-            <View style={{ backgroundColor: "#f3f4f6", padding: 10, borderRadius: 8, marginTop: 8 }}>
-              <Text style={{ fontSize: 11, color: "#999", marginBottom: 6 }}>
-                Masukkan email temanmu (harus sudah pernah daftar di aplikasi ini)
-              </Text>
+            <View style={{ backgroundColor: COLORS.surfaceLight, padding: 10, borderRadius: RADIUS.sm, marginTop: SPACING.sm }}>
+              <Text style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 6, fontFamily: FONT.regular }}>Masukkan email temanmu (harus sudah pernah daftar)</Text>
               <TextInput
                 placeholder="Email teman"
+                placeholderTextColor={COLORS.textMuted}
                 value={memberEmail}
                 onChangeText={setMemberEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
-                style={{ backgroundColor: "white", borderRadius: 6, padding: 8, marginBottom: 6, fontSize: 13 }}
+                style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.sm, padding: 8, marginBottom: 6, fontSize: 13, color: COLORS.textPrimary, fontFamily: FONT.regular }}
               />
-              <TouchableOpacity
-                onPress={handleAddMember}
-                disabled={searchingMember}
-                style={{ backgroundColor: "#22c55e", padding: 8, borderRadius: 6, alignItems: "center" }}
-              >
-                <Text style={{ color: "white", fontWeight: "bold", fontSize: 13 }}>
-                  {searchingMember ? "Mencari..." : "Tambah"}
-                </Text>
+              <TouchableOpacity onPress={handleAddMember} disabled={searchingMember} style={{ backgroundColor: COLORS.success, padding: 8, borderRadius: RADIUS.sm, alignItems: "center" }}>
+                <Text style={{ color: "white", fontFamily: FONT.semibold, fontSize: 13 }}>{searchingMember ? "Mencari..." : "Tambah"}</Text>
               </TouchableOpacity>
             </View>
           )}
 
-          {/* Sub-Tugas */}
-          <Text style={{ fontWeight: "600", marginTop: 16, marginBottom: 4 }}>Pembagian Tugas:</Text>
+          <Text style={{ fontFamily: FONT.semibold, marginTop: SPACING.lg, marginBottom: 4, color: COLORS.textPrimary, fontSize: FONT_SIZE.sm }}>Pembagian Tugas:</Text>
 
           {subtasks.map((task) => (
-            <View
-              key={task.id}
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                backgroundColor: "#f9fafb",
-                padding: 10,
-                borderRadius: 8,
-                marginBottom: 6,
-              }}
-            >
+            <View key={task.id} style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: COLORS.surfaceLight, padding: 10, borderRadius: RADIUS.sm, marginBottom: 6 }}>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 13 }}>{task.deskripsi}</Text>
-                <Text style={{ fontSize: 11, color: "#999" }}>{task.assignedToEmail}</Text>
+                <Text style={{ fontSize: 13, color: COLORS.textPrimary, fontFamily: FONT.regular }}>{task.deskripsi}</Text>
+                <Text style={{ fontSize: 11, color: COLORS.textMuted, fontFamily: FONT.regular }}>{task.assignedToEmail}</Text>
                 <TouchableOpacity onPress={() => updateSubTaskStatus(group.id, task.id, cycleStatus(task.status))}>
-                  <Text style={{ fontSize: 11, color: statusColor[task.status], fontWeight: "600", marginTop: 2 }}>
+                  <Text style={{ fontSize: 11, color: statusColor[task.status], fontFamily: FONT.semibold, marginTop: 2 }}>
                     {statusLabel[task.status]} (tap untuk ubah)
                   </Text>
                 </TouchableOpacity>
               </View>
               <TouchableOpacity onPress={() => deleteSubTask(group.id, task.id)}>
-                <Text style={{ color: "#ef4444", fontSize: 12 }}>Hapus</Text>
+                <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
               </TouchableOpacity>
             </View>
           ))}
 
           <TouchableOpacity onPress={() => setShowAddTask(!showAddTask)} style={{ marginTop: 4 }}>
-            <Text style={{ color: "#3b82f6", fontSize: 13, fontWeight: "600" }}>
-              {showAddTask ? "Batal" : "+ Tambah Sub-Tugas"}
-            </Text>
+            <Text style={{ color: COLORS.primaryLight, fontSize: 13, fontFamily: FONT.semibold }}>{showAddTask ? "Batal" : "+ Tambah Sub-Tugas"}</Text>
           </TouchableOpacity>
 
           {showAddTask && (
-            <View style={{ backgroundColor: "#f3f4f6", padding: 10, borderRadius: 8, marginTop: 8 }}>
+            <View style={{ backgroundColor: COLORS.surfaceLight, padding: 10, borderRadius: RADIUS.sm, marginTop: SPACING.sm }}>
               <TextInput
-                placeholder="Deskripsi tugas (contoh: Kerjakan Bab 3)"
+                placeholder="Deskripsi tugas"
+                placeholderTextColor={COLORS.textMuted}
                 value={taskDesc}
                 onChangeText={setTaskDesc}
-                style={{ backgroundColor: "white", borderRadius: 6, padding: 8, marginBottom: 6, fontSize: 13 }}
+                style={{ backgroundColor: COLORS.surface, borderRadius: RADIUS.sm, padding: 8, marginBottom: 6, fontSize: 13, color: COLORS.textPrimary, fontFamily: FONT.regular }}
               />
-              <Text style={{ fontSize: 12, marginBottom: 4 }}>Ditugaskan ke:</Text>
-              <ScrollView horizontal style={{ marginBottom: 8 }}>
+              <Text style={{ fontSize: 12, marginBottom: 4, color: COLORS.textSecondary, fontFamily: FONT.regular }}>Ditugaskan ke:</Text>
+              <ScrollView horizontal style={{ marginBottom: SPACING.sm }}>
                 {group.anggotaEmail.map((email, idx) => (
                   <TouchableOpacity
                     key={idx}
                     onPress={() => setTaskAssignTo(idx)}
-                    style={{
-                      backgroundColor: taskAssignTo === idx ? "#3b82f6" : "white",
-                      paddingVertical: 6,
-                      paddingHorizontal: 10,
-                      borderRadius: 16,
-                      marginRight: 6,
-                    }}
+                    style={{ backgroundColor: taskAssignTo === idx ? COLORS.primary : COLORS.surface, paddingVertical: 6, paddingHorizontal: 10, borderRadius: RADIUS.full, marginRight: 6 }}
                   >
-                    <Text style={{ color: taskAssignTo === idx ? "white" : "black", fontSize: 12 }}>
-                      {email}
-                    </Text>
+                    <Text style={{ color: taskAssignTo === idx ? "white" : COLORS.textSecondary, fontSize: 12, fontFamily: FONT.medium }}>{email}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-              <TouchableOpacity
-                onPress={handleAddTask}
-                style={{ backgroundColor: "#22c55e", padding: 8, borderRadius: 6, alignItems: "center" }}
-              >
-                <Text style={{ color: "white", fontWeight: "bold", fontSize: 13 }}>Tambah Tugas</Text>
+              <TouchableOpacity onPress={handleAddTask} style={{ backgroundColor: COLORS.success, padding: 8, borderRadius: RADIUS.sm, alignItems: "center" }}>
+                <Text style={{ color: "white", fontFamily: FONT.semibold, fontSize: 13 }}>Tambah Tugas</Text>
               </TouchableOpacity>
             </View>
           )}
