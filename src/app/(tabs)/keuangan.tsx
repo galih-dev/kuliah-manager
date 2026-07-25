@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Alert, FlatList, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
@@ -121,7 +121,10 @@ export default function Keuangan() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}>
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}
+  >
       <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: SPACING.lg }}>
         Keuangan
       </Text>
@@ -204,6 +207,6 @@ export default function Keuangan() {
           </View>
         )}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }

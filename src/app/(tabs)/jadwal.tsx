@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Alert, FlatList, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
@@ -18,6 +18,8 @@ import {
   listenToTasks,
   toggleTaskDone,
 } from "../../../services/scheduleService";
+import { DatePickerInput } from "../../components/DatePickerInput";
+import { TimePickerInput } from "../../components/TimePickerInput";
 
 const HARI_LIST = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
@@ -52,7 +54,10 @@ export default function Jadwal() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}>
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}
+  >
       <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: SPACING.lg }}>
         Jadwal Akademik
       </Text>
@@ -74,7 +79,7 @@ export default function Jadwal() {
       {activeTab === "kuliah" && <JadwalKuliahTab />}
       {activeTab === "tugas" && <DeadlineTugasTab />}
       {activeTab === "ujian" && <UjianTab />}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -87,6 +92,7 @@ function JadwalKuliahTab() {
   const [jamSelesai, setJamSelesai] = useState("");
   const [ruangan, setRuangan] = useState("");
   const [dosen, setDosen] = useState("");
+  const [jamSebelum, setJamSebelum] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const unsubscribe = listenToClasses(setClasses);
@@ -94,7 +100,7 @@ function JadwalKuliahTab() {
   }, []);
 
   const resetForm = () => {
-    setMatkul(""); setHari("Senin"); setJamMulai(""); setJamSelesai(""); setRuangan(""); setDosen(""); setShowForm(false);
+    setMatkul(""); setHari("Senin"); setJamMulai(""); setJamSelesai(""); setRuangan(""); setDosen(""); setJamSebelum(undefined); setShowForm(false);
   };
 
   const handleAdd = async () => {
@@ -103,7 +109,7 @@ function JadwalKuliahTab() {
       return;
     }
     try {
-      await addClass({ matkul, hari, jamMulai, jamSelesai, ruangan, dosen });
+      await addClass({ matkul, hari, jamMulai, jamSelesai, ruangan, dosen, jamSebelum });
       resetForm();
     } catch (error: any) {
       Alert.alert("Gagal menambah jadwal", error.message);
@@ -143,14 +149,46 @@ function JadwalKuliahTab() {
             ))}
           </View>
           <View style={{ flexDirection: "row", gap: 8 }}>
-            <TextInput placeholder="Jam Mulai (08:00)" placeholderTextColor={COLORS.textMuted} value={jamMulai} onChangeText={setJamMulai} style={{ ...inputStyle, flex: 1 }} />
-            <TextInput placeholder="Jam Selesai (10:00)" placeholderTextColor={COLORS.textMuted} value={jamSelesai} onChangeText={setJamSelesai} style={{ ...inputStyle, flex: 1 }} />
+            <View style={{ flex: 1 }}>
+              <TimePickerInput value={jamMulai} onChange={setJamMulai} placeholder="Jam Mulai" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <TimePickerInput value={jamSelesai} onChange={setJamSelesai} placeholder="Jam Selesai" />
+            </View>
           </View>
           <TextInput placeholder="Ruangan" placeholderTextColor={COLORS.textMuted} value={ruangan} onChangeText={setRuangan} style={inputStyle} />
           <TextInput placeholder="Nama Dosen" placeholderTextColor={COLORS.textMuted} value={dosen} onChangeText={setDosen} style={inputStyle} />
           <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center", marginTop: 4 }}>
             <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>
           </TouchableOpacity>
+
+          <Text style={{ color: COLORS.textSecondary, marginBottom: 6, fontFamily: FONT.semibold, fontSize: FONT_SIZE.sm }}>
+            Ingatkan Sebelum Kelas Dimulai
+          </Text>
+          <View style={{ flexDirection: "row", marginBottom: SPACING.md }}>
+            {[
+              { label: "Tanpa Reminder", value: undefined },
+              { label: "1 Jam Sebelum", value: 1 },
+              { label: "2 Jam Sebelum", value: 2 },
+            ].map((opt) => (
+              <TouchableOpacity
+                key={opt.label}
+                onPress={() => setJamSebelum(opt.value)}
+                style={{
+                  backgroundColor: jamSebelum === opt.value ? COLORS.primary : COLORS.surfaceLight,
+                  paddingVertical: 6,
+                  paddingHorizontal: 10,
+                  borderRadius: RADIUS.full,
+                  marginRight: 6,
+                  marginBottom: 6,
+                }}
+              >
+                <Text style={{ color: jamSebelum === opt.value ? "white" : COLORS.textSecondary, fontSize: 11 }}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </ScrollView>
       )}
 
@@ -243,7 +281,7 @@ function DeadlineTugasTab() {
         <View style={{ backgroundColor: COLORS.surface, padding: SPACING.lg, borderRadius: RADIUS.lg, marginBottom: SPACING.lg }}>
           <TextInput placeholder="Judul Tugas" placeholderTextColor={COLORS.textMuted} value={judul} onChangeText={setJudul} style={inputStyle} />
           <TextInput placeholder="Mata Kuliah (opsional)" placeholderTextColor={COLORS.textMuted} value={matkul} onChangeText={setMatkul} style={inputStyle} />
-          <TextInput placeholder="Deadline (YYYY-MM-DD)" placeholderTextColor={COLORS.textMuted} value={deadline} onChangeText={setDeadline} style={inputStyle} />
+          <DatePickerInput value={deadline} onChange={setDeadline} placeholder="Pilih Deadline" />
           <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
             <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>
           </TouchableOpacity>
@@ -359,7 +397,7 @@ function UjianTab() {
               </TouchableOpacity>
             ))}
           </View>
-          <TextInput placeholder="Tanggal (YYYY-MM-DD)" placeholderTextColor={COLORS.textMuted} value={tanggal} onChangeText={setTanggal} style={inputStyle} />
+          <DatePickerInput value={tanggal} onChange={setTanggal} placeholder="Pilih Tanggal Ujian" />
           <TextInput placeholder="Ruangan (opsional)" placeholderTextColor={COLORS.textMuted} value={ruangan} onChangeText={setRuangan} style={inputStyle} />
           <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
             <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>

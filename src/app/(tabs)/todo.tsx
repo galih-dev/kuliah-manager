@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Alert, FlatList, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import { addTodo, deleteTodo, listenToTodos, Todo, toggleTodoDone } from "../../../services/scheduleService";
@@ -66,7 +66,10 @@ export default function TodoScreen() {
   const totalSelesai = todos.filter((t) => t.selesai).length;
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}>
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}
+  >
       <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 2 }}>
         To-Do List
       </Text>
@@ -139,6 +142,6 @@ export default function TodoScreen() {
           </View>
         )}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }

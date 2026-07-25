@@ -8,6 +8,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import { cancelClassReminder, cancelDeadlineReminder, scheduleClassReminder, scheduleDeadlineReminder } from "./notificationService";
 
 export type ClassSchedule = {
   id: string;
@@ -17,6 +18,7 @@ export type ClassSchedule = {
   jamSelesai: string;
   ruangan: string;
   dosen: string;
+  jamSebelum?: number;
 };
 
 // Ambil referensi collection sesuai user yang login
@@ -27,9 +29,19 @@ function getClassesRef() {
 }
 
 // Tambah jadwal baru
-export async function addClass(data: Omit<ClassSchedule, "id">) {
+export async function addClass(data: Omit<ClassSchedule, "id"> & { jamSebelum?: number }) {
   const ref = getClassesRef();
-  await addDoc(ref, data);
+
+  const dataToSave: any = { ...data };
+  if (dataToSave.jamSebelum === undefined) {
+    delete dataToSave.jamSebelum;
+  }
+
+  const docRef = await addDoc(ref, dataToSave);
+
+  if (data.jamSebelum) {
+    await scheduleClassReminder(docRef.id, data.matkul, data.hari, data.jamMulai, data.jamSebelum);
+  }
 }
 
 // Hapus jadwal
@@ -37,6 +49,7 @@ export async function deleteClass(classId: string) {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User belum login");
   await deleteDoc(doc(db, "schedules", userId, "classes", classId));
+  await cancelClassReminder(classId);
 }
 
 // Dengarkan perubahan data secara real-time
@@ -72,13 +85,15 @@ function getTasksRef() {
 
 export async function addTask(data: Omit<Task, "id" | "selesai">) {
   const ref = getTasksRef();
-  await addDoc(ref, { ...data, selesai: false });
+  const docRef = await addDoc(ref, { ...data, selesai: false });
+  await scheduleDeadlineReminder(docRef.id, data.judul, data.deadline);
 }
 
 export async function deleteTask(taskId: string) {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User belum login");
   await deleteDoc(doc(db, "tasks", userId, "items", taskId));
+  await cancelDeadlineReminder(taskId);
 }
 
 export async function toggleTaskDone(taskId: string, selesai: boolean) {

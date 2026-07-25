@@ -1,7 +1,7 @@
 import { Link, router } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SPACING } from "../../../constants/theme";
 import { auth } from "../../../services/firebase";
 
@@ -12,7 +12,8 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Email dan password harus diisi");
+      if (Platform.OS === "web") window.alert("Email dan password harus diisi");
+      else Alert.alert("Error", "Email dan password harus diisi");
       return;
     }
     setLoading(true);
@@ -20,14 +21,18 @@ export default function Login() {
       await signInWithEmailAndPassword(auth, email, password);
       router.replace("/home");
     } catch (error: any) {
-      Alert.alert("Login Gagal", error.message);
+      if (Platform.OS === "web") window.alert("Login Gagal: " + error.message);
+      else Alert.alert("Login Gagal", error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: "center", padding: SPACING.xl }}>
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: "center", padding: SPACING.xl }}
+  >
       <Text style={{ fontSize: 32, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 4 }}>
         Masuk
       </Text>
@@ -94,6 +99,6 @@ export default function Login() {
           Belum punya akun? Daftar
         </Text>
       </Link>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

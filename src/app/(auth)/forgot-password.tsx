@@ -1,7 +1,7 @@
 import { Link } from "expo-router";
 import { sendPasswordResetEmail } from "firebase/auth";
 import { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SPACING } from "../../../constants/theme";
 import { auth } from "../../../services/firebase";
 
@@ -27,7 +27,10 @@ export default function ForgotPassword() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: "center", padding: SPACING.xl }}>
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: "center", padding: SPACING.xl }}
+  >
       <Text style={{ fontSize: 28, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 4 }}>
         Lupa Password
       </Text>
@@ -70,6 +73,6 @@ export default function ForgotPassword() {
           Kembali ke Login
         </Text>
       </Link>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

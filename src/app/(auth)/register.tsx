@@ -2,7 +2,7 @@ import { Link, router } from "expo-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SPACING } from "../../../constants/theme";
 import { auth, db } from "../../../services/firebase";
 
@@ -15,15 +15,18 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (!nama || !email || !password || !konfirmasiPassword) {
-      Alert.alert("Error", "Semua field wajib diisi");
+      if (Platform.OS === "web") window.alert("Semua field wajib diisi");
+      else Alert.alert("Error", "Semua field wajib diisi");
       return;
     }
     if (password.length < 6) {
-      Alert.alert("Error", "Password minimal 6 karakter");
+      if (Platform.OS === "web") window.alert("Password minimal 6 karakter");
+      else Alert.alert("Error", "Password minimal 6 karakter");
       return;
     }
     if (password !== konfirmasiPassword) {
-      Alert.alert("Error", "Konfirmasi password tidak cocok");
+      if (Platform.OS === "web") window.alert("Konfirmasi password tidak cocok");
+      else Alert.alert("Error", "Konfirmasi password tidak cocok");
       return;
     }
     setLoading(true);
@@ -37,14 +40,18 @@ export default function Register() {
       });
       router.replace("/home");
     } catch (error: any) {
-      Alert.alert("Registrasi Gagal", error.message);
+      if (Platform.OS === "web") window.alert("Registrasi Gagal: " + error.message);
+      else Alert.alert("Registrasi Gagal", error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: "center", padding: SPACING.xl }}>
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: "center", padding: SPACING.xl }}
+  >
       <Text style={{ fontSize: 32, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 4 }}>
         Daftar
       </Text>
@@ -103,6 +110,6 @@ export default function Register() {
           Sudah punya akun? Masuk
         </Text>
       </Link>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

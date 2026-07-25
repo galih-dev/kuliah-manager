@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "kuliah-manager",
+    "name": "KuliahKu",
     "slug": "kuliah-manager",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icon.png",
     "scheme": "kuliahmanager",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -12,12 +12,13 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
+        "backgroundColor": "#0b1120",
+        "foregroundImage": "./assets/icon.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "permissions": ["SCHEDULE_EXACT_ALARM"],
+      "predictiveBackGestureEnabled": false,
+      "package": "com.galih.kuliahmanager"
     },
     "web": {
       "output": "static",
@@ -25,20 +26,28 @@
     },
     "plugins": [
       "expo-router",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#0b1120",
+          "image": "./assets/icon.png",
+          "imageWidth": 200
         }
       ],
-      "expo-status-bar",
-      "expo-font"
+      "expo-font",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0483a117-b32a-48a1-9fdb-f0722a0d9f1c"
+      }
+    },
+    "owner": "galihdevs-team"
   }
 }

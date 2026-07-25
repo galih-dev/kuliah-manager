@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Alert, FlatList, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import { auth } from "../../../services/firebase";
@@ -77,7 +77,10 @@ export default function Kelompok() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}>
+    <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg }}
+  >
       <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: SPACING.lg }}>
         Tugas Kelompok
       </Text>
@@ -113,7 +116,7 @@ export default function Kelompok() {
           />
         )}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

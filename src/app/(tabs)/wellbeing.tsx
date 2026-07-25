@@ -1,9 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Alert, Platform, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
+import { getAllScheduledNotifications, } from "../../../services/notificationService";
 import { listenToWellbeingSettings, saveWellbeingSettings, WellbeingSettings } from "../../../services/wellbeingService";
+import { TimePickerInput } from "../../components/TimePickerInput";
 
 const TIPS = [
   "Jangan lupa minum air putih ya!",
@@ -63,7 +65,18 @@ export default function Wellbeing() {
     }
   };
 
+  const handleCheckNotifications = async () => {
+    const notifs = await getAllScheduledNotifications();
+    if (notifs.length === 0) {
+      Alert.alert("Info", "Belum ada notifikasi yang terjadwal");
+    } else {
+      const list = notifs.map((n) => `${n.content.title}: ${n.content.body}`).join("\n\n");
+      Alert.alert(`${notifs.length} Notifikasi Terjadwal`, list);
+    }
+  };
+
   return (
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }} contentContainerStyle={{ padding: SPACING.lg }}>
       <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: SPACING.lg }}>
         Wellbeing
@@ -97,34 +110,24 @@ export default function Wellbeing() {
           <Ionicons name="bed" size={14} color={COLORS.textSecondary} style={{ marginRight: 6 }} />
           <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: FONT.medium }}>Jam Istirahat</Text>
         </View>
-        <TextInput
-          placeholder="15:00"
-          placeholderTextColor={COLORS.textMuted}
-          value={jamIstirahatInput}
-          onChangeText={setJamIstirahatInput}
-          style={{ backgroundColor: COLORS.surfaceLight, borderRadius: RADIUS.sm, padding: 10, marginBottom: SPACING.md, color: COLORS.textPrimary, fontFamily: FONT.regular }}
-        />
+        <TimePickerInput value={jamIstirahatInput} onChange={setJamIstirahatInput} placeholder="Pilih Jam Istirahat" />
 
         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
           <Ionicons name="fitness" size={14} color={COLORS.textSecondary} style={{ marginRight: 6 }} />
           <Text style={{ fontSize: 13, color: COLORS.textSecondary, fontFamily: FONT.medium }}>Jam Olahraga</Text>
         </View>
-        <TextInput
-          placeholder="17:00"
-          placeholderTextColor={COLORS.textMuted}
-          value={jamOlahragaInput}
-          onChangeText={setJamOlahragaInput}
-          style={{ backgroundColor: COLORS.surfaceLight, borderRadius: RADIUS.sm, padding: 10, marginBottom: SPACING.lg, color: COLORS.textPrimary, fontFamily: FONT.regular }}
-        />
+        <TimePickerInput value={jamOlahragaInput} onChange={setJamOlahragaInput} placeholder="Pilih Jam Olahraga" />
 
         <TouchableOpacity onPress={handleSaveJam} style={{ backgroundColor: COLORS.primary, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
           <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan Pengaturan</Text>
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
+         </View>
 
       <Text style={{ color: COLORS.textMuted, fontSize: 11, marginTop: SPACING.lg, textAlign: "center", fontFamily: FONT.regular }}>
         Catatan: fitur notifikasi push belum aktif, ini baru pengaturan dasarnya dulu ya
       </Text>
+
     </ScrollView>
+  </KeyboardAvoidingView>
   );
 }
