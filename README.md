@@ -49,7 +49,9 @@ If you have repository access and want to run it locally:
    npx expo start
 4. Scan the QR code using the Expo Go app on your Android device.
 
-👨‍💻 Developed By
+   ---
+
+## 👨‍💻 Developed By
 Galih Noor Firdaus
 
 Informatics Student @ UPN "Veteran" Jawa Timur
