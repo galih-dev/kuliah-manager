@@ -18,7 +18,7 @@
 
 ## 🛠️ Tech Stack & Tools
 - **Language:** TypeScript, JavaScript, HTML, CSS
-- **Framework & Runtime:** React Native / Expo Go
+- **Framework & Runtime:** React Native / Expo Go / Firebase
 - **Deployment & Hosting:** Vercel / GitHub
 - **Version Control:** Git & GitHub
 
