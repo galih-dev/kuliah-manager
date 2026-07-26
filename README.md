@@ -1,6 +1,6 @@
 # 📱 KuliahKu
 
-> An Android application designed to help university students manage their everyday campus life, tasks, and schedule efficiently.
+***An Android application designed to help university students manage their everyday campus life, tasks, and schedule efficiently.***
 
 ---
 
