@@ -1,12 +1,13 @@
 import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    getDoc,
-    onSnapshot,
-    query,
-    setDoc,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  onSnapshot,
+  query,
+  setDoc,
+  updateDoc
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 
@@ -35,6 +36,12 @@ export async function deleteTransaction(transactionId: string) {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User belum login");
   await deleteDoc(doc(db, "transactions", userId, "items", transactionId));
+}
+
+export async function updateTransaction(transactionId: string, data: Partial<Omit<Transaction, "id">>) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await updateDoc(doc(db, "transactions", userId, "items", transactionId), data);
 }
 
 export function listenToTransactions(callback: (transactions: Transaction[]) => void) {

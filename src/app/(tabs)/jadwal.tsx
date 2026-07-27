@@ -17,6 +17,9 @@ import {
   listenToExams,
   listenToTasks,
   toggleTaskDone,
+  updateClass,
+  updateExam,
+  updateTask,
 } from "../../../services/scheduleService";
 import { DatePickerInput } from "../../components/DatePickerInput";
 import { TimePickerInput } from "../../components/TimePickerInput";
@@ -84,6 +87,7 @@ export default function Jadwal() {
 }
 
 function JadwalKuliahTab() {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [classes, setClasses] = useState<ClassSchedule[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [matkul, setMatkul] = useState("");
@@ -100,7 +104,7 @@ function JadwalKuliahTab() {
   }, []);
 
   const resetForm = () => {
-    setMatkul(""); setHari("Senin"); setJamMulai(""); setJamSelesai(""); setRuangan(""); setDosen(""); setJamSebelum(undefined); setShowForm(false);
+    setMatkul(""); setHari("Senin"); setJamMulai(""); setJamSelesai(""); setRuangan(""); setDosen(""); setJamSebelum(undefined); setShowForm(false); setEditingId(null);
   };
 
   const handleAdd = async () => {
@@ -109,10 +113,15 @@ function JadwalKuliahTab() {
       return;
     }
     try {
-      await addClass({ matkul, hari, jamMulai, jamSelesai, ruangan, dosen, jamSebelum });
+      if (editingId) {
+        await updateClass(editingId, { matkul, hari, jamMulai, jamSelesai, ruangan, dosen, jamSebelum });
+        setEditingId(null);
+      } else {
+        await addClass({ matkul, hari, jamMulai, jamSelesai, ruangan, dosen, jamSebelum });
+      }
       resetForm();
     } catch (error: any) {
-      Alert.alert("Gagal menambah jadwal", error.message);
+      Alert.alert("Gagal menyimpan jadwal", error.message);
     }
   };
 
@@ -125,6 +134,18 @@ function JadwalKuliahTab() {
         { text: "Hapus", style: "destructive", onPress: () => deleteClass(id) },
       ]);
     }
+  };
+
+  const handleStartEdit = (item: ClassSchedule) => {
+    setEditingId(item.id);
+    setMatkul(item.matkul);
+    setHari(item.hari);
+    setJamMulai(item.jamMulai);
+    setJamSelesai(item.jamSelesai);
+    setRuangan(item.ruangan);
+    setDosen(item.dosen);
+    setJamSebelum(item.jamSebelum);
+    setShowForm(true);
   };
 
   return (
@@ -158,9 +179,9 @@ function JadwalKuliahTab() {
           </View>
           <TextInput placeholder="Ruangan" placeholderTextColor={COLORS.textMuted} value={ruangan} onChangeText={setRuangan} style={inputStyle} />
           <TextInput placeholder="Nama Dosen" placeholderTextColor={COLORS.textMuted} value={dosen} onChangeText={setDosen} style={inputStyle} />
-          <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center", marginTop: 4 }}>
-            <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>
-          </TouchableOpacity>
+         <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center", marginTop: 4 }}>
+          <Text style={{ color: "white", fontFamily: FONT.semibold }}>{editingId ? "Update" : "Simpan"}</Text>
+        </TouchableOpacity>
 
           <Text style={{ color: COLORS.textSecondary, marginBottom: 6, fontFamily: FONT.semibold, fontSize: FONT_SIZE.sm }}>
             Ingatkan Sebelum Kelas Dimulai
@@ -205,6 +226,9 @@ function JadwalKuliahTab() {
                 {item.ruangan ? <Text style={{ color: COLORS.textSecondary, marginTop: 2, fontSize: FONT_SIZE.xs, fontFamily: FONT.regular }}>Ruangan: {item.ruangan}</Text> : null}
                 {item.dosen ? <Text style={{ color: COLORS.textSecondary, fontSize: FONT_SIZE.xs, fontFamily: FONT.regular }}>Dosen: {item.dosen}</Text> : null}
               </View>
+              <TouchableOpacity onPress={() => handleStartEdit(item)} style={{ marginRight: 12 }}>
+                <Ionicons name="pencil-outline" size={18} color={COLORS.primary} />
+              </TouchableOpacity>
               <TouchableOpacity onPress={() => handleDelete(item.id)}>
                 <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
               </TouchableOpacity>
@@ -217,6 +241,7 @@ function JadwalKuliahTab() {
 }
 
 function DeadlineTugasTab() {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [judul, setJudul] = useState("");
@@ -228,7 +253,7 @@ function DeadlineTugasTab() {
     return unsubscribe;
   }, []);
 
-  const resetForm = () => { setJudul(""); setMatkul(""); setDeadline(""); setShowForm(false); };
+  const resetForm = () => { setJudul(""); setMatkul(""); setDeadline(""); setShowForm(false); setEditingId(null); };
 
   const handleAdd = async () => {
     if (!judul || !deadline) {
@@ -240,10 +265,15 @@ function DeadlineTugasTab() {
       return;
     }
     try {
-      await addTask({ judul, matkul, deadline });
+      if (editingId) {
+        await updateTask(editingId, { judul, matkul, deadline });
+        setEditingId(null);
+      } else {
+        await addTask({ judul, matkul, deadline });
+      }
       resetForm();
     } catch (error: any) {
-      Alert.alert("Gagal menambah tugas", error.message);
+      Alert.alert("Gagal menyimpan tugas", error.message);
     }
   };
 
@@ -267,6 +297,14 @@ function DeadlineTugasTab() {
     return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   };
 
+  const handleStartEdit = (item: Task) => {
+    setEditingId(item.id);
+    setJudul(item.judul);
+    setMatkul(item.matkul);
+    setDeadline(item.deadline);
+    setShowForm(true);
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <TouchableOpacity
@@ -282,9 +320,9 @@ function DeadlineTugasTab() {
           <TextInput placeholder="Judul Tugas" placeholderTextColor={COLORS.textMuted} value={judul} onChangeText={setJudul} style={inputStyle} />
           <TextInput placeholder="Mata Kuliah (opsional)" placeholderTextColor={COLORS.textMuted} value={matkul} onChangeText={setMatkul} style={inputStyle} />
           <DatePickerInput value={deadline} onChange={setDeadline} placeholder="Pilih Deadline" />
-          <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
-            <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>
-          </TouchableOpacity>
+         <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
+          <Text style={{ color: "white", fontFamily: FONT.semibold }}>{editingId ? "Update" : "Simpan"}</Text>
+        </TouchableOpacity>
         </View>
       )}
 
@@ -312,6 +350,9 @@ function DeadlineTugasTab() {
                     <Text style={{ color: urgencyColor, marginTop: 4, fontFamily: FONT.semibold, fontSize: FONT_SIZE.xs }}>{item.deadline} • {urgencyText}</Text>
                   </View>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleStartEdit(item)} style={{ marginRight: 12 }}>
+                  <Ionicons name="pencil-outline" size={18} color={COLORS.primary} />
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(item.id)}>
                   <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
                 </TouchableOpacity>
@@ -325,6 +366,7 @@ function DeadlineTugasTab() {
 }
 
 function UjianTab() {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [exams, setExams] = useState<Exam[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [matkul, setMatkul] = useState("");
@@ -337,9 +379,9 @@ function UjianTab() {
     return unsubscribe;
   }, []);
 
-  const resetForm = () => { setMatkul(""); setJenis("UTS"); setTanggal(""); setRuangan(""); setShowForm(false); };
+  const resetForm = () => { setMatkul(""); setJenis("UTS"); setTanggal(""); setRuangan(""); setShowForm(false); setEditingId(null) };
 
-  const handleAdd = async () => {
+ const handleAdd = async () => {
     if (!matkul || !tanggal) {
       Alert.alert("Error", "Mata kuliah dan tanggal wajib diisi");
       return;
@@ -349,10 +391,15 @@ function UjianTab() {
       return;
     }
     try {
-      await addExam({ matkul, jenis, tanggal, ruangan });
+      if (editingId) {
+        await updateExam(editingId, { matkul, jenis, tanggal, ruangan });
+        setEditingId(null);
+      } else {
+        await addExam({ matkul, jenis, tanggal, ruangan });
+      }
       resetForm();
     } catch (error: any) {
-      Alert.alert("Gagal menambah jadwal ujian", error.message);
+      Alert.alert("Gagal menyimpan jadwal ujian", error.message);
     }
   };
 
@@ -374,6 +421,15 @@ function UjianTab() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const handleStartEdit = (item: Exam) => {
+    setEditingId(item.id);
+    setMatkul(item.matkul);
+    setJenis(item.jenis);
+    setTanggal(item.tanggal);
+    setRuangan(item.ruangan);
+    setShowForm(true);
   };
 
   return (
@@ -400,7 +456,7 @@ function UjianTab() {
           <DatePickerInput value={tanggal} onChange={setTanggal} placeholder="Pilih Tanggal Ujian" />
           <TextInput placeholder="Ruangan (opsional)" placeholderTextColor={COLORS.textMuted} value={ruangan} onChangeText={setRuangan} style={inputStyle} />
           <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
-            <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>
+            <Text style={{ color: "white", fontFamily: FONT.semibold }}>{editingId ? "Update" : "Simpan"}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -431,6 +487,9 @@ function UjianTab() {
                   {item.ruangan ? <Text style={{ color: COLORS.textSecondary, marginTop: 6, fontSize: FONT_SIZE.xs, fontFamily: FONT.regular }}>Ruangan: {item.ruangan}</Text> : null}
                   <Text style={{ color: urgencyColor, marginTop: 4, fontFamily: FONT.semibold, fontSize: FONT_SIZE.xs }}>{item.tanggal} • {urgencyText}</Text>
                 </View>
+                <TouchableOpacity onPress={() => handleStartEdit(item)} style={{ marginRight: 12 }}>
+                  <Ionicons name="pencil-outline" size={18} color={COLORS.primary} />
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(item.id)}>
                   <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
                 </TouchableOpacity>

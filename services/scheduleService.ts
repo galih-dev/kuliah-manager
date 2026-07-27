@@ -67,6 +67,24 @@ export function listenToClasses(
   });
 }
 
+export async function updateClass(classId: string, data: Partial<Omit<ClassSchedule, "id">>) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await updateDoc(doc(db, "schedules", userId, "classes", classId), data);
+}
+
+export async function updateTask(taskId: string, data: Partial<Omit<Task, "id" | "selesai">>) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await updateDoc(doc(db, "tasks", userId, "items", taskId), data);
+}
+
+export async function updateExam(examId: string, data: Partial<Omit<Exam, "id">>) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await updateDoc(doc(db, "exams", userId, "items", examId), data);
+}
+
 // ==================== TUGAS/DEADLINE ====================
 
 export type Task = {
@@ -147,6 +165,12 @@ export async function toggleTodoDone(todoId: string, selesai: boolean) {
   const userId = auth.currentUser?.uid;
   if (!userId) throw new Error("User belum login");
   await updateDoc(doc(db, "todos", userId, "items", todoId), { selesai });
+}
+
+export async function updateTodo(todoId: string, data: Partial<Omit<Todo, "id">>) {
+  const userId = auth.currentUser?.uid;
+  if (!userId) throw new Error("User belum login");
+  await updateDoc(doc(db, "todos", userId, "items", todoId), data);
 }
 
 export function listenToTodos(callback: (todos: Todo[]) => void) {

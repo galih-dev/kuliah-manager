@@ -29,6 +29,10 @@ export type SubTask = {
   status: "belum" | "proses" | "selesai";
 };
 
+export async function updateGroupProject(groupId: string, data: { namaProyek?: string; deadlineInternal?: string }) {
+  await updateDoc(doc(db, "groupTasks", groupId), data);
+}
+
 // ==================== GROUP PROJECTS ====================
 
 export async function createGroupProject(data: {

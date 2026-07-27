@@ -172,3 +172,29 @@ export async function testClassReminder() {
     trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: targetDate },
   });
 }
+
+export async function scheduleWellbeingReminder(
+  type: "istirahat" | "olahraga",
+  jam: string // format HH:MM
+) {
+  const [hours, minutes] = jam.split(":").map(Number);
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: type === "istirahat" ? "Waktunya Istirahat!" : "Waktunya Olahraga!",
+      body: type === "istirahat"
+        ? "Yuk istirahat sebentar dari aktivitas kuliahmu"
+        : "Yuk gerakkan tubuh, olahraga ringan aja cukup",
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      hour: hours,
+      minute: minutes,
+    },
+    identifier: `wellbeing-${type}`,
+  });
+}
+
+export async function cancelWellbeingReminder(type: "istirahat" | "olahraga") {
+  await Notifications.cancelScheduledNotificationAsync(`wellbeing-${type}`);
+}

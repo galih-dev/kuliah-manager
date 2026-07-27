@@ -10,6 +10,7 @@ import {
   listenToTransactions,
   setBudget,
   Transaction,
+  updateTransaction,
 } from "../../../services/financeService";
 
 function getCurrentYYYYMM() {
@@ -49,6 +50,7 @@ export default function Keuangan() {
   const [kategori, setKategori] = useState(KATEGORI_LIST[0]);
   const [catatan, setCatatan] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const currentMonth = getCurrentYYYYMM();
 
@@ -100,12 +102,17 @@ export default function Keuangan() {
       return;
     }
     try {
-      await addTransaction({ jumlah: angka, kategori, tanggal: getTodayString(), catatan });
+      if (editingId) {
+        await updateTransaction(editingId, { jumlah: angka, kategori, catatan });
+        setEditingId(null);
+      } else {
+        await addTransaction({ jumlah: angka, kategori, tanggal: getTodayString(), catatan });
+      }
       setJumlah("");
       setCatatan("");
       setShowForm(false);
     } catch (error: any) {
-      Alert.alert("Gagal menambah transaksi", error.message);
+      Alert.alert("Gagal menyimpan transaksi", error.message);
     }
   };
 
@@ -118,6 +125,14 @@ export default function Keuangan() {
         { text: "Hapus", style: "destructive", onPress: () => deleteTransaction(id) },
       ]);
     }
+  };
+
+  const handleStartEdit = (item: Transaction) => {
+    setEditingId(item.id);
+    setJumlah(String(item.jumlah));
+    setKategori(item.kategori);
+    setCatatan(item.catatan || "");
+    setShowForm(true);
   };
 
   return (
@@ -181,7 +196,7 @@ export default function Keuangan() {
           </View>
           <TextInput placeholder="Catatan (opsional)" placeholderTextColor={COLORS.textMuted} value={catatan} onChangeText={setCatatan} style={inputStyle} />
           <TouchableOpacity onPress={handleAddTransaction} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center" }}>
-            <Text style={{ color: "white", fontFamily: FONT.semibold }}>Simpan</Text>
+            <Text style={{ color: "white", fontFamily: FONT.semibold }}>{editingId ? "Update" : "Simpan"}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -200,7 +215,9 @@ export default function Keuangan() {
               {item.catatan ? <Text style={{ color: COLORS.textMuted, fontSize: 11, fontFamily: FONT.regular }}>{item.catatan}</Text> : null}
               <Text style={{ color: COLORS.textMuted, fontSize: 11, fontFamily: FONT.regular }}>{item.tanggal}</Text>
             </View>
-            <Text style={{ color: COLORS.danger, fontFamily: FONT.bold, marginRight: 12, fontSize: FONT_SIZE.sm }}>-{formatRupiah(item.jumlah)}</Text>
+            <TouchableOpacity onPress={() => handleStartEdit(item)} style={{ marginRight: 8 }}>
+              <Ionicons name="pencil-outline" size={16} color={COLORS.primary} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => handleDelete(item.id)}>
               <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
             </TouchableOpacity>

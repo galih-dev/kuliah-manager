@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
-import { getAllScheduledNotifications, } from "../../../services/notificationService";
+import { cancelWellbeingReminder, getAllScheduledNotifications, scheduleWellbeingReminder, } from "../../../services/notificationService";
 import { listenToWellbeingSettings, saveWellbeingSettings, WellbeingSettings } from "../../../services/wellbeingService";
 import { TimePickerInput } from "../../components/TimePickerInput";
 
@@ -43,6 +43,14 @@ export default function Wellbeing() {
   const handleToggleAktif = async (value: boolean) => {
     try {
       await saveWellbeingSettings({ ...settings, aktif: value });
+
+      if (value) {
+        await scheduleWellbeingReminder("istirahat", jamIstirahatInput);
+        await scheduleWellbeingReminder("olahraga", jamOlahragaInput);
+      } else {
+        await cancelWellbeingReminder("istirahat");
+        await cancelWellbeingReminder("olahraga");
+      }
     } catch (error: any) {
       Alert.alert("Gagal update", error.message);
     }
@@ -57,6 +65,12 @@ export default function Wellbeing() {
     }
     try {
       await saveWellbeingSettings({ ...settings, jamIstirahat: jamIstirahatInput, jamOlahraga: jamOlahragaInput });
+
+      if (settings.aktif) {
+        await scheduleWellbeingReminder("istirahat", jamIstirahatInput);
+        await scheduleWellbeingReminder("olahraga", jamOlahragaInput);
+      }
+
       if (Platform.OS === "web") window.alert("Berhasil! Pengaturan reminder disimpan.");
       else Alert.alert("Berhasil", "Pengaturan reminder disimpan!");
     } catch (error: any) {

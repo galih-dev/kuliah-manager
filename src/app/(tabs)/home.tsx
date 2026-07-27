@@ -12,6 +12,13 @@ function getTodayHari() {
   return hariList[new Date().getDay()];
 }
 
+function getTomorrowHari() {
+  const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return hariList[tomorrow.getDay()];
+}
+
 function getCurrentYYYYMM() {
   const today = new Date();
   return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
@@ -39,6 +46,7 @@ export default function Home() {
   const [budget, setBudget] = useState(0);
 
   const todayHari = getTodayHari();
+  const tomorrowHari = getTomorrowHari();
   const currentMonth = getCurrentYYYYMM();
 
   useEffect(() => {
@@ -67,6 +75,7 @@ export default function Home() {
   }
 
   const jadwalHariIni = classes.filter((c) => c.hari === todayHari).sort((a, b) => a.jamMulai.localeCompare(b.jamMulai));
+  const jadwalBesok = classes.filter((c) => c.hari == tomorrowHari).sort((a, b) => a.jamMulai.localeCompare(b.jamMulai));
   const deadlineTerdekat = tasks.filter((t) => !t.selesai).sort((a, b) => a.deadline.localeCompare(b.deadline)).slice(0, 3);
   const todoBelumSelesai = todos.filter((t) => !t.selesai);
   const transaksiBulanIni = transactions.filter((t) => t.tanggal.startsWith(currentMonth));
@@ -114,6 +123,40 @@ export default function Home() {
             <View key={c.id} style={{ marginBottom: SPACING.sm }}>
               <Text style={{ fontFamily: FONT.semibold, color: COLORS.textPrimary, fontSize: FONT_SIZE.sm }}>{c.matkul}</Text>
               <Text style={{ color: COLORS.primary, fontFamily: FONT.regular, fontSize: FONT_SIZE.xs, marginTop: 2 }}>
+                {c.jamMulai} - {c.jamSelesai} {c.ruangan ? `• ${c.ruangan}` : ""}
+              </Text>
+            </View>
+          ))
+        )}
+      </TouchableOpacity>
+
+      {/* Kartu Jadwal Besok */}
+      <TouchableOpacity
+        onPress={() => router.push("/jadwal")}
+        activeOpacity={0.8}
+        style={{
+          backgroundColor: COLORS.surface,
+          borderRadius: RADIUS.lg,
+          padding: SPACING.lg,
+          marginBottom: SPACING.md,
+          ...SHADOW.card,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: SPACING.sm }}>
+          <Ionicons name="calendar-outline" size={18} color={COLORS.textSecondary} style={{ marginRight: 8 }} />
+          <Text style={{ fontFamily: FONT.semibold, fontSize: FONT_SIZE.base, color: COLORS.textPrimary }}>
+            Jadwal Besok ({tomorrowHari})
+          </Text>
+        </View>
+        {jadwalBesok.length === 0 ? (
+          <Text style={{ color: COLORS.textMuted, fontFamily: FONT.regular, fontSize: FONT_SIZE.sm }}>
+            Tidak ada kelas besok.
+          </Text>
+        ) : (
+          jadwalBesok.map((c) => (
+            <View key={c.id} style={{ marginBottom: SPACING.sm }}>
+              <Text style={{ fontFamily: FONT.semibold, color: COLORS.textPrimary, fontSize: FONT_SIZE.sm }}>{c.matkul}</Text>
+              <Text style={{ color: COLORS.textSecondary, fontSize: FONT_SIZE.xs, marginTop: 2 }}>
                 {c.jamMulai} - {c.jamSelesai} {c.ruangan ? `• ${c.ruangan}` : ""}
               </Text>
             </View>

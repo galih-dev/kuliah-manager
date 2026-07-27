@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Alert, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
-import { addTodo, deleteTodo, listenToTodos, Todo, toggleTodoDone } from "../../../services/scheduleService";
+import { addTodo, deleteTodo, listenToTodos, Todo, toggleTodoDone, updateTodo } from "../../../services/scheduleService";
 
 function getTodayString() {
   const today = new Date();
@@ -15,6 +15,7 @@ function getTodayString() {
 
 export default function TodoScreen() {
   const { user, loading } = useAuth();
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [judul, setJudul] = useState("");
   const [tipe, setTipe] = useState<"harian" | "mingguan">("harian");
@@ -32,10 +33,15 @@ export default function TodoScreen() {
       return;
     }
     try {
-      await addTodo({ judul, tipe, tanggal: getTodayString() });
+      if (editingId) {
+        await updateTodo(editingId, { judul, tipe });
+        setEditingId(null);
+      } else {
+        await addTodo({ judul, tipe, tanggal: getTodayString() });
+      }
       setJudul("");
     } catch (error: any) {
-      Alert.alert("Gagal menambah to-do", error.message);
+      Alert.alert("Gagal menyimpan to-do", error.message);
     }
   };
 
@@ -48,6 +54,18 @@ export default function TodoScreen() {
         { text: "Hapus", style: "destructive", onPress: () => deleteTodo(id) },
       ]);
     }
+  };
+
+  const handleStartEdit = (todo: Todo) => {
+    setEditingId(todo.id);
+    setJudul(todo.judul);
+    setTipe(todo.tipe);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setJudul("");
+    setTipe("harian");
   };
 
   if (loading) {
@@ -79,7 +97,7 @@ export default function TodoScreen() {
 
       <View style={{ flexDirection: "row", gap: 8, marginBottom: SPACING.md }}>
         <TextInput
-          placeholder="Tambah to-do baru..."
+          placeholder={editingId ? "Edit to-do..." : "Tambah to-do baru..."}
           placeholderTextColor={COLORS.textMuted}
           value={judul}
           onChangeText={setJudul}
@@ -87,8 +105,13 @@ export default function TodoScreen() {
           style={{ flex: 1, backgroundColor: COLORS.surface, borderRadius: RADIUS.sm, padding: 12, color: COLORS.textPrimary, fontFamily: FONT.regular }}
         />
         <TouchableOpacity onPress={handleAdd} style={{ backgroundColor: COLORS.primary, paddingHorizontal: 18, borderRadius: RADIUS.sm, justifyContent: "center", alignItems: "center" }}>
-          <Ionicons name="add" size={22} color="white" />
+          <Ionicons name={editingId ? "checkmark" : "add"} size={22} color="white" />
         </TouchableOpacity>
+        {editingId && (
+          <TouchableOpacity onPress={handleCancelEdit} style={{ backgroundColor: COLORS.surfaceLight, paddingHorizontal: 18, borderRadius: RADIUS.sm, justifyContent: "center", alignItems: "center" }}>
+            <Ionicons name="close" size={22} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={{ flexDirection: "row", gap: 8, marginBottom: SPACING.lg }}>
@@ -135,6 +158,9 @@ export default function TodoScreen() {
                   {item.tipe === "harian" ? "Harian" : "Mingguan"}
                 </Text>
               </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleStartEdit(item)} style={{ marginRight: 12 }}>
+              <Ionicons name="pencil-outline" size={18} color={COLORS.primary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleDelete(item.id)}>
               <Ionicons name="trash-outline" size={18} color={COLORS.danger} />

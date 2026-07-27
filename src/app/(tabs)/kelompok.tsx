@@ -15,6 +15,7 @@ import {
   listenToMyGroups,
   listenToSubTasks,
   SubTask,
+  updateGroupProject,
   updateSubTaskStatus,
 } from "../../../services/groupService";
 
@@ -35,6 +36,7 @@ export default function Kelompok() {
   const [namaProyek, setNamaProyek] = useState("");
   const [deadline, setDeadline] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -56,12 +58,17 @@ export default function Kelompok() {
       return;
     }
     try {
-      await createGroupProject({ namaProyek, deadlineInternal: deadline });
+      if (editingId) {
+        await updateGroupProject(editingId, { namaProyek, deadlineInternal: deadline });
+        setEditingId(null);
+      } else {
+        await createGroupProject({ namaProyek, deadlineInternal: deadline });
+      }
       setNamaProyek("");
       setDeadline("");
       setShowForm(false);
     } catch (error: any) {
-      Alert.alert("Gagal membuat proyek", error.message);
+      Alert.alert("Gagal menyimpan proyek", error.message);
     }
   };
 
@@ -74,6 +81,13 @@ export default function Kelompok() {
         { text: "Hapus", style: "destructive", onPress: () => deleteGroupProject(id) },
       ]);
     }
+  };
+
+  const handleStartEdit = (group: GroupProject) => {
+    setEditingId(group.id);
+    setNamaProyek(group.namaProyek);
+    setDeadline(group.deadlineInternal);
+    setShowForm(true);
   };
 
   return (
@@ -97,9 +111,9 @@ export default function Kelompok() {
         <View style={{ backgroundColor: COLORS.surface, padding: SPACING.lg, borderRadius: RADIUS.lg, marginBottom: SPACING.lg }}>
           <TextInput placeholder="Nama Proyek" placeholderTextColor={COLORS.textMuted} value={namaProyek} onChangeText={setNamaProyek} style={inputStyle} />
           <TextInput placeholder="Deadline Internal (YYYY-MM-DD)" placeholderTextColor={COLORS.textMuted} value={deadline} onChangeText={setDeadline} style={inputStyle} />
-          <TouchableOpacity onPress={handleCreate} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center", marginTop: 4 }}>
-            <Text style={{ color: "white", fontFamily: FONT.semibold }}>Buat Proyek</Text>
-          </TouchableOpacity>
+         <TouchableOpacity onPress={handleCreate} style={{ backgroundColor: COLORS.success, padding: 12, borderRadius: RADIUS.sm, alignItems: "center", marginTop: 4 }}>
+          <Text style={{ color: "white", fontFamily: FONT.semibold }}>{editingId ? "Update Proyek" : "Buat Proyek"}</Text>
+        </TouchableOpacity>
         </View>
       )}
 
@@ -113,6 +127,7 @@ export default function Kelompok() {
             expanded={expandedId === item.id}
             onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
             onDelete={() => handleDeleteGroup(item.id)}
+            onEdit={() => handleStartEdit(item)}
           />
         )}
       />
@@ -120,7 +135,7 @@ export default function Kelompok() {
   );
 }
 
-function GroupCard({ group, expanded, onToggle, onDelete }: { group: GroupProject; expanded: boolean; onToggle: () => void; onDelete: () => void }) {
+function GroupCard({ group, expanded, onToggle, onDelete, onEdit }: { group: GroupProject; expanded: boolean; onToggle: () => void; onDelete: () => void; onEdit: () => void }) {
   const [subtasks, setSubtasks] = useState<SubTask[]>([]);
   const [showAddMember, setShowAddMember] = useState(false);
   const [memberEmail, setMemberEmail] = useState("");
@@ -201,9 +216,14 @@ function GroupCard({ group, expanded, onToggle, onDelete }: { group: GroupProjec
             <Text style={{ color: COLORS.textMuted, fontSize: 11, marginTop: 2, fontFamily: FONT.regular }}>{group.anggota.length} anggota</Text>
           </View>
           {group.pembuatId === myUid && (
-            <TouchableOpacity onPress={onDelete}>
-              <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity onPress={onEdit}>
+                <Ionicons name="pencil-outline" size={18} color={COLORS.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={onDelete}>
+                <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       </TouchableOpacity>
