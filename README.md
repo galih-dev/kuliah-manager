@@ -1,56 +1,40 @@
-# Welcome to your Expo app 👋
+# 📱 KuliahKu
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+***An Android application designed to help university students manage their everyday campus life, tasks, and schedule efficiently.***
 
-## Get started
+---
 
-1. Install dependencies
+## 🌟 Overview
+**KuliahKu** is a lightweight, intuitive mobile app built to solve everyday student productivity challenges. From tracking class schedules to managing assignments, KuliahKu keeps everything organized in one place.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## ✨ Key Features
+- **Student Dashboard:** Quick access to daily schedules and upcoming task deadlines.
+- **Task & Homework Tracker:** Stay organized and never miss an assignment submission.
+- **Interactive UI:** Smooth transitions, modern layout, and custom application splash screens.
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 🛠️ Tech Stack & Tools
+- **Language:** TypeScript, JavaScript, HTML, CSS
+- **Framework & Runtime:** React Native / Expo Go / Firebase
+- **Deployment & Hosting:** Vercel / GitHub
+- **Version Control:** Git & GitHub
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📥 How to Access / Test the App
 
-## Get a fresh project
+This application is currently in **private testing / direct distribution**. 
 
-When you're ready, run:
+If you are interested in testing or reviewing the APK:
+1. Contact me via **GitHub Discussions / Issues** or Email.
+2. Upon permission, the APK file / demo build will be provided directly.
 
-```bash
-npm run reset-project
-```
+---
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 👨‍💻 Developed By
+Galih Noor Firdaus
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Informatics Student @ UPN "Veteran" Jawa Timur
