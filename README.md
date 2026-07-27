@@ -34,23 +34,6 @@ If you are interested in testing or reviewing the APK:
 
 ---
 
-## 🚀 For Developers (Run Locally)
-
-If you have repository access and want to run it locally:
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/galih-dev/KuliahKu.git](https://github.com/galih-dev/KuliahKu.git)
-   cd KuliahKu
-2. Install dependencies:
-   ```bash
-   npm install
-3. Start Expo server:
-   ```bash
-   npx expo start
-4. Scan the QR code using the Expo Go app on your Android device.
-
-   ---
-
 ## 👨‍💻 Developed By
 Galih Noor Firdaus
 
