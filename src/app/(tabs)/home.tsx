@@ -5,7 +5,7 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
-import { getBudget, listenToTransactions, Transaction } from "../../../services/financeService";
+import { listenToBudget, listenToTransactions, Transaction } from "../../../services/financeService";
 import { ClassSchedule, listenToClasses, listenToTasks, listenToTodos, Task, Todo } from "../../../services/scheduleService";
 
 function getTodayHari() {
@@ -50,20 +50,19 @@ export default function Home() {
   const tomorrowHari = getTomorrowHari();
   const currentMonth = getCurrentYYYYMM();
 
-  useEffect(() => {
+ useEffect(() => {
     if (!user) return;
     const unsub1 = listenToClasses(setClasses);
     const unsub2 = listenToTasks(setTasks);
     const unsub3 = listenToTodos(setTodos);
     const unsub4 = listenToTransactions(setTransactions);
-    getBudget(currentMonth).then((b) => {
-      if (b !== null) setBudget(b);
-    });
+    const unsub5 = listenToBudget(currentMonth, setBudget);
     return () => {
       unsub1();
       unsub2();
       unsub3();
       unsub4();
+      unsub5();
     };
   }, [user]);
 

@@ -5,12 +5,12 @@ import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../const
 import { useAuth } from "../../../contexts/AuthContext";
 import {
   addTransaction, deleteTransaction,
-  getBudget,
   KATEGORI_LIST,
+  listenToBudget,
   listenToTransactions,
   setBudget,
   Transaction,
-  updateTransaction,
+  updateTransaction
 } from "../../../services/financeService";
 
 function getCurrentYYYYMM() {
@@ -60,11 +60,10 @@ export default function Keuangan() {
     return unsubscribe;
   }, [user]);
 
-  useEffect(() => {
+ useEffect(() => {
     if (!user) return;
-    getBudget(currentMonth).then((b) => {
-      if (b !== null) setBudgetState(b);
-    });
+    const unsubscribe = listenToBudget(currentMonth, setBudgetState);
+    return unsubscribe;
   }, [user]);
 
   if (loading) {

@@ -58,6 +58,17 @@ export function listenToTransactions(callback: (transactions: Transaction[]) => 
   });
 }
 
+export function listenToBudget(yyyymm: string, callback: (budget: number) => void) {
+  const ref = getBudgetDocRef(yyyymm);
+  return onSnapshot(ref, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.data().totalBudget ?? 0);
+    } else {
+      callback(0);
+    }
+  });
+}
+
 // ==================== BUDGET BULANAN ====================
 
 function getBudgetDocRef(yyyymm: string) {
