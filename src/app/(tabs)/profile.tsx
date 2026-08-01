@@ -17,7 +17,7 @@ const inputStyle = {
 };
 
 export default function Profile() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
 
   const [namaInput, setNamaInput] = useState(user?.displayName || "");
   const [savingName, setSavingName] = useState(false);
@@ -36,24 +36,25 @@ export default function Profile() {
     );
   }
 
-  const handleSaveName = async () => {
+ const handleSaveName = async () => {
     if (!namaInput.trim()) {
-        if (Platform.OS === "web") window.alert("Nama tidak boleh kosong");
-        else Alert.alert("Error", "Nama tidak boleh kosong");
-        return;
+      if (Platform.OS === "web") window.alert("Nama tidak boleh kosong");
+      else Alert.alert("Error", "Nama tidak boleh kosong");
+      return;
     }
     setSavingName(true);
     try {
-        await updateUserName(namaInput);
-        if (Platform.OS === "web") window.alert("Nama berhasil diperbarui!");
-        else Alert.alert("Berhasil", "Nama berhasil diperbarui!");
+      await updateUserName(namaInput);
+      await refreshUser();
+      if (Platform.OS === "web") window.alert("Nama berhasil diperbarui!");
+      else Alert.alert("Berhasil", "Nama berhasil diperbarui!");
     } catch (error: any) {
-        if (Platform.OS === "web") window.alert("Gagal update nama: " + error.message);
-        else Alert.alert("Gagal update nama", error.message);
+      if (Platform.OS === "web") window.alert("Gagal update nama: " + error.message);
+      else Alert.alert("Gagal update nama", error.message);
     } finally {
-        setSavingName(false);
+      setSavingName(false);
     }
-    };
+  };
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { COLORS, FONT, FONT_SIZE, RADIUS, SHADOW, SPACING } from "../../../constants/theme";
 import { useAuth } from "../../../contexts/AuthContext";
 import { getBudget, listenToTransactions, Transaction } from "../../../services/financeService";
@@ -85,12 +86,13 @@ export default function Home() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: COLORS.background }} contentContainerStyle={{ padding: SPACING.lg }}>
       <Text style={{ fontSize: FONT_SIZE.xxl, fontFamily: FONT.bold, color: COLORS.textPrimary, marginBottom: 2 }}>
-        Halo!
+        Halo, {user?.displayName || "Kamu"}!
       </Text>
       <Text style={{ fontSize: FONT_SIZE.base, fontFamily: FONT.regular, color: COLORS.textSecondary, marginBottom: SPACING.xl }}>
         Hari ini {todayHari}, semangat kuliahnya!
       </Text>
 
+      <Animated.View entering={FadeInDown.duration(400).delay(0)}>
       <TouchableOpacity
         onPress={() => router.push("/keuangan")}
         activeOpacity={0.8}
@@ -106,7 +108,10 @@ export default function Home() {
           dari budget {formatRupiah(budget)}
         </Text>
       </TouchableOpacity>
+      </Animated.View>
 
+
+      <Animated.View entering={FadeInDown.duration(400).delay(100)}>
       <TouchableOpacity
         onPress={() => router.push("/jadwal")}
         activeOpacity={0.8}
@@ -129,8 +134,11 @@ export default function Home() {
           ))
         )}
       </TouchableOpacity>
+      </Animated.View>
+
 
       {/* Kartu Jadwal Besok */}
+      <Animated.View entering={FadeInDown.duration(400).delay(200)}>
       <TouchableOpacity
         onPress={() => router.push("/jadwal")}
         activeOpacity={0.8}
@@ -150,7 +158,7 @@ export default function Home() {
         </View>
         {jadwalBesok.length === 0 ? (
           <Text style={{ color: COLORS.textMuted, fontFamily: FONT.regular, fontSize: FONT_SIZE.sm }}>
-            Tidak ada kelas besok.
+            Tidak ada kelas besok, santai dulu gak sih.
           </Text>
         ) : (
           jadwalBesok.map((c) => (
@@ -163,7 +171,9 @@ export default function Home() {
           ))
         )}
       </TouchableOpacity>
+      </Animated.View>
 
+      <Animated.View entering={FadeInDown.duration(400).delay(300)}>
       <TouchableOpacity
         onPress={() => router.push("/jadwal")}
         activeOpacity={0.8}
@@ -190,7 +200,9 @@ export default function Home() {
           })
         )}
       </TouchableOpacity>
+      </Animated.View>
 
+      <Animated.View entering={FadeInDown.duration(400).delay(400)}>
       <TouchableOpacity
         onPress={() => router.push("/todo")}
         activeOpacity={0.8}
@@ -211,6 +223,7 @@ export default function Home() {
           </View>
         )}
       </TouchableOpacity>
+      </Animated.View>
     </ScrollView>
   );
 }

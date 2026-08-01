@@ -13,6 +13,10 @@ import { COLORS } from "../../constants/theme";
 import { AuthProvider } from "../../contexts/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({
+  duration: 400,
+  fade: true,
+});
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
